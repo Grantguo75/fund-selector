@@ -170,6 +170,32 @@
   .pos-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
   .pos-fields label { font-size:11px; color:var(--sub); }
   .pos-edit { font-size:11px; color:var(--blue); cursor:pointer; margin-left:8px; }
+  /* ============ 持仓汇总 + 亏损排序（v6.3.8）============ */
+  .summary-box { background:linear-gradient(135deg,#1e293b,#334155); color:#fff; border-radius:14px; padding:14px; margin:0 12px 12px; box-shadow:0 2px 8px rgba(30,41,59,.15); }
+  .summary-box.gain { background:linear-gradient(135deg,#991b1b,#dc2626); }
+  .summary-box.loss { background:linear-gradient(135deg,#14532d,#16a34a); }
+  .summary-title { font-size:12px; color:rgba(255,255,255,.7); margin-bottom:8px; }
+  .summary-pnl { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+  .summary-pnl .big { font-size:28px; font-weight:800; }
+  .summary-pnl .pct { font-size:14px; font-weight:600; opacity:.9; }
+  .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  .summary-grid .si { background:rgba(255,255,255,.1); border-radius:8px; padding:6px 4px; text-align:center; }
+  .summary-grid .si .k { font-size:9px; color:rgba(255,255,255,.6); }
+  .summary-grid .si .v { font-size:12px; font-weight:700; margin-top:2px; }
+  .summary-note { font-size:10px; color:rgba(255,255,255,.5); margin-top:8px; }
+  /* 亏损排序表 */
+  .rank-box { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 13px; margin:0 12px 12px; }
+  .rank-head { font-size:13px; font-weight:800; color:#1e293b; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+  .rank-head small { font-size:10px; font-weight:400; color:#9ca3af; }
+  .rank-item { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-top:1px dashed #eef0f4; font-size:12px; }
+  .rank-item:first-of-type { border-top:none; }
+  .rank-item .ri-left { flex:1; min-width:0; }
+  .rank-item .ri-name { font-weight:600; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rank-item .ri-code { font-size:10px; color:#9ca3af; }
+  .rank-item .ri-right { text-align:right; flex-shrink:0; margin-left:8px; }
+  .rank-item .ri-amt { font-weight:700; font-size:13px; }
+  .rank-item .ri-pct { font-size:10px; }
+  .rank-item .ri-rank { font-size:10px; color:#9ca3af; width:18px; text-align:center; flex-shrink:0; }
   /* ============ 消息面/情绪面 ============ */
   .sent { background:linear-gradient(135deg,#eef2ff,#f5f3ff); border:1px solid #c7d2fe; border-radius:12px; padding:11px 13px; margin:0 12px 10px; }
   .ov-sent { margin:0 0 10px; }
@@ -1852,6 +1878,77 @@ function calcRecoveryPath(item, d, sl, realized){
   };
 }
 
+/* ============ 持仓汇总 + 亏损排序（v6.3.8）============
+   输入：list(原始持仓)、ds(加载后的基金数据)
+   汇总：今日总盈亏、总市值、总投入、总浮动盈亏、总盈亏(含已实现)
+   排序：按总盈亏率从低到高（亏得多的排前面），只显示基金名+亏损金额+比例 */
+function summaryBoxHtml(list, ds){
+  let totalCost = 0, totalValue = 0, totalRealized = 0, todayPnl = 0;
+  const items = []; // {name,code,amt,pct,realized,todayPnl}
+  list.forEach((item, i)=>{
+    const d = ds[i];
+    if(!d) return;
+    const nav = latestNav(d);
+    const todayPct = (d.quote && d.quote.pct!=null) ? d.quote.pct : 0;
+    if(item.cost!=null && item.shares!=null && nav!=null){
+      const costVal = item.cost * item.shares;
+      const nowVal = nav * item.shares;
+      const pnl = nowVal - costVal;
+      const realized = (item.realized!=null && !isNaN(parseFloat(item.realized))) ? parseFloat(item.realized) : 0;
+      const totalPnl = pnl + realized;
+      const totalPnlRate = costVal>0 ? totalPnl/costVal : 0;
+      // 今日盈亏 = 昨日市值 × 今日涨跌幅 ≈ (nowVal/(1+todayPct)) × todayPct
+      const yestVal = todayPct!=0 ? nowVal/(1+todayPct) : nowVal;
+      const dayPnl = yestVal * todayPct;
+      totalCost += costVal;
+      totalValue += nowVal;
+      totalRealized += realized;
+      todayPnl += dayPnl;
+      items.push({
+        name: d.name || item.code, code: item.code,
+        costVal, nowVal, pnl, realized, totalPnl, totalPnlRate,
+        todayPct, dayPnl
+      });
+    }
+  });
+  if(!items.length) return { summary:null, rank:null };
+  const totalPnlAll = (totalValue - totalCost) + totalRealized;
+  const totalPnlRate = totalCost>0 ? totalPnlAll/totalCost : 0;
+  const fmt = (x)=> Math.abs(x)>=10000 ? (x/10000).toFixed(2)+"万" : x.toFixed(2);
+  const todayPct = totalValue>0 ? todayPnl/(totalValue - todayPnl) : 0;
+  // 汇总卡
+  const summaryCls = totalPnlAll >= 0 ? "gain" : "loss";
+  const summary =
+    '<div class="summary-box '+summaryCls+'">' +
+      '<div class="summary-title">📊 持仓汇总 · 共 '+items.length+' 只</div>' +
+      '<div class="summary-pnl">' +
+        '<span class="big">'+(totalPnlAll>=0?"+":"-")+fmt(Math.abs(totalPnlAll))+'</span>' +
+        '<span class="pct">'+(totalPnlRate*100>=0?"+":"")+(totalPnlRate*100).toFixed(2)+'%</span>' +
+      '</div>' +
+      '<div class="summary-grid">' +
+        '<div class="si"><span class="k">总投入</span><div class="v">'+fmt(totalCost)+'</div></div>' +
+        '<div class="si"><span class="k">总市值</span><div class="v">'+fmt(totalValue)+'</div></div>' +
+        '<div class="si"><span class="k">今日盈亏</span><div class="v">'+(todayPnl>=0?"+":"-")+fmt(Math.abs(todayPnl))+'</div></div>' +
+        '<div class="si"><span class="k">已实现</span><div class="v">'+(totalRealized>=0?"+":"-")+fmt(Math.abs(totalRealized))+'</div></div>' +
+      '</div>' +
+      '<div class="summary-note">总盈亏 = (总市值-总投入) + 已实现盈亏 · 今日盈亏按今日涨跌幅×昨日市值估算</div>' +
+    '</div>';
+  // 亏损排序：按总盈亏率从低到高（亏得多的排前面）
+  items.sort((a,b)=> a.totalPnlRate - b.totalPnlRate);
+  let rankHtml = '<div class="rank-box">';
+  rankHtml += '<div class="rank-head">📉 亏损程度排序 <small>从亏得多到亏得少（或赚）</small></div>';
+  items.forEach((it, idx)=>{
+    const cls_ = it.totalPnl >= 0 ? "up" : "down";
+    rankHtml += '<div class="rank-item">';
+    rankHtml += '<div class="ri-rank">'+(idx+1)+'</div>';
+    rankHtml += '<div class="ri-left"><div class="ri-name">'+it.name+'</div><div class="ri-code">'+it.code+' · 今日 '+(it.todayPct*100>=0?"+":"")+(it.todayPct*100).toFixed(2)+'%</div></div>';
+    rankHtml += '<div class="ri-right"><div class="ri-amt '+cls_+'">'+(it.totalPnl>=0?"+":"-")+fmt(Math.abs(it.totalPnl))+'</div><div class="ri-pct '+cls_+'">'+(it.totalPnlRate*100>=0?"+":"")+(it.totalPnlRate*100).toFixed(2)+'%</div></div>';
+    rankHtml += '</div>';
+  });
+  rankHtml += '</div>';
+  return { summary, rank:rankHtml };
+}
+
 // 渲染单只持仓的盈亏 + 止损止盈框
 // 已实现盈亏（item.realized，元）由用户手动填写——表示之前买卖已落袋的部分
 // 总盈亏 = 浮动盈亏 + 已实现盈亏
@@ -2212,9 +2309,17 @@ async function refreshCustomList(){
   }
   const hasPos = list.some(x=>x.cost!=null && x.shares!=null);
   box.innerHTML = '<div class="ctitle">我的持仓<small>共 '+list.length+' 只'+(hasPos?' · 含盈亏与止损止盈线':'')+'</small></div>';
+
+  // 汇总占位（先显示加载中，等数据加载完再填充）
+  const summaryHolder = document.createElement("div");
+  summaryHolder.innerHTML = '<div class="summary-box"><div class="summary-title">📊 持仓汇总</div><div style="text-align:center;padding:10px;font-size:12px;opacity:.7">加载中…</div></div>';
+  box.appendChild(summaryHolder.firstElementChild);
+
   const holder = document.createElement("div");
   holder.className = "clist";
   box.appendChild(holder);
+  // 排序表占位
+  const rankHolder = document.createElement("div");
 
   // 并行加载持仓基金
   const ds = await Promise.all(list.map(loadCustomFund));
@@ -2246,6 +2351,22 @@ async function refreshCustomList(){
     }
     holder.appendChild(el);
   });
+
+  // 持仓汇总 + 亏损排序（v6.3.8）
+  const sumResult = summaryBoxHtml(list, ds);
+  if(sumResult.summary){
+    // 替换顶部占位
+    const oldSummary = box.querySelector(".summary-box");
+    if(oldSummary) oldSummary.outerHTML = sumResult.summary;
+    // 排序表追加到列表后面
+    if(sumResult.rank){
+      holder.insertAdjacentHTML("afterend", sumResult.rank);
+    }
+  } else {
+    // 没有持仓数据（都没填成本份额），移除占位
+    const oldSummary = box.querySelector(".summary-box");
+    if(oldSummary) oldSummary.remove();
+  }
   // 不再做跨板块对比：持仓跨多板块，与"当前板块 Top3"对比无意义
 }
 // 保存已实现盈亏
