@@ -146,6 +146,30 @@
   .compare-table .fund-code { font-size:10px; color:var(--sub); }
   .compare-wrap { overflow-x:auto; padding-bottom:10px; }
   .del-btn { font-size:11px; color:#ef4444; margin-left:8px; cursor:pointer; }
+  /* ============ 持仓盈亏 & 止损止盈 ============ */
+  .pos-box { background:#fff; border-radius:12px; padding:11px 13px; margin:10px 0 0; border:1px solid var(--line); }
+  .pos-box.loss { border-color:#fecaca; background:#fef2f2; }
+  .pos-box.gain { border-color:#bbf7d0; background:#f0fdf4; }
+  .pos-head { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--sub); margin-bottom:6px; }
+  .pos-head b { color:var(--ink); }
+  .pos-pnl { display:flex; gap:10px; flex-wrap:wrap; }
+  .pos-pnl .pi { flex:1; min-width:70px; background:#f8fafc; border-radius:8px; padding:6px 8px; text-align:center; }
+  .pos-pnl .pi .k { font-size:10px; color:var(--sub); }
+  .pos-pnl .pi .v { font-size:14px; font-weight:800; margin-top:2px; }
+  .pos-pnl .pi .v.up { color:var(--up); }
+  .pos-pnl .pi .v.down { color:var(--down); }
+  .sl-box { background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:9px 11px; margin-top:9px; }
+  .sl-box .sl-title { font-size:12px; font-weight:800; color:#b45309; margin-bottom:5px; }
+  .sl-box .sl-line { display:flex; justify-content:space-between; font-size:11px; line-height:1.8; color:#78350f; }
+  .sl-box .sl-line b { color:#1a1d24; }
+  .sl-box .sl-line .sl-stop { color:#dc2626; font-weight:700; }
+  .sl-box .sl-line .sl-take { color:#16a34a; font-weight:700; }
+  .sl-box .sl-why { font-size:10px; color:#92400e; margin-top:5px; line-height:1.5; background:#fff; border-radius:6px; padding:5px 7px; }
+  .pos-input { width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; margin-top:5px; }
+  .pos-input:focus { outline:none; border-color:var(--blue); }
+  .pos-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .pos-fields label { font-size:11px; color:var(--sub); }
+  .pos-edit { font-size:11px; color:var(--blue); cursor:pointer; margin-left:8px; }
   /* ============ 消息面/情绪面 ============ */
   .sent { background:linear-gradient(135deg,#eef2ff,#f5f3ff); border:1px solid #c7d2fe; border-radius:12px; padding:11px 13px; margin:0 12px 10px; }
   .ov-sent { margin:0 0 10px; }
@@ -171,6 +195,33 @@
   .sent-row b.north { color:#4338ca; }
   .sent-row .sub { font-size:10px; color:#9aa0aa; margin-left:6px; }
   .sent-note { font-size:11px; color:#6b7280; line-height:1.6; margin-top:6px; background:#fafaff; border-radius:8px; padding:7px 9px; }
+  /* ============ 🤖 板块诊断规则引擎 ============ */
+  .diag-box { border-radius:12px; padding:12px 13px; margin:0 12px 10px; border:1px solid; }
+  .diag-box.sev-good { background:#f0fdf4; border-color:#86efac; }
+  .diag-box.sev-warn { background:#fffbeb; border-color:#fcd34d; }
+  .diag-box.sev-danger { background:#fef2f2; border-color:#fecaca; }
+  .diag-box.sev-neutral { background:#f8fafc; border-color:#e5e7eb; }
+  .diag-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .diag-head b { font-size:13px; color:#1e293b; }
+  .diag-pattern { font-size:12px; font-weight:700; color:#1e293b; }
+  .diag-why { font-size:11px; color:#374151; line-height:1.7; margin-bottom:8px; }
+  .diag-line { padding:1px 0; }
+  .diag-advice-head { font-size:11px; font-weight:700; color:#1e40af; margin-bottom:4px; }
+  .diag-advice { font-size:11px; color:#1e293b; line-height:1.7; background:#fff; border-radius:8px; padding:7px 9px; margin-bottom:6px; }
+  .diag-note { font-size:10px; color:#9ca3af; line-height:1.5; }
+  /* ============ 📰 板块资讯 ============ */
+  .news-box { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:11px 13px; margin:0 12px 10px; }
+  .news-head { font-size:13px; font-weight:800; color:#1e293b; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+  .news-head small { font-size:10px; font-weight:400; color:#9ca3af; }
+  .news-item { padding:8px 0; border-top:1px dashed #eef0f4; }
+  .news-item:first-of-type { border-top:none; }
+  .news-meta { font-size:10px; color:#9ca3af; margin-bottom:3px; }
+  .news-title { font-size:13px; font-weight:600; color:#1e293b; line-height:1.4; text-decoration:none; display:block; }
+  .news-title:active { color:#1e40af; }
+  .news-summary { font-size:11px; color:#6b7280; line-height:1.5; margin-top:3px; }
+  .news-link { font-size:10px; color:#1e40af; text-decoration:none; margin-top:3px; display:inline-block; }
+  .news-empty { font-size:11px; color:#9ca3af; text-align:center; padding:10px; }
+  .news-loading { font-size:11px; color:#9ca3af; text-align:center; padding:10px; }
 </style>
 </head>
 <body>
@@ -180,7 +231,7 @@
   <div class="topbar">
     <div class="hint">点板块看最强 3 只 · 红涨绿跌 · 数据来自天天基金/东方财富（周末/非交易时段显示最近净值日涨跌）</div>
     <div class="btns">
-      <button class="favbtn" id="cusBtn">🔍 自选对比</button>
+      <button class="favbtn" id="cusBtn">💼 我的持仓</button>
       <button class="favbtn" id="favBtn">★ 收藏(<span id="favCount">0</span>)</button>
       <button class="ovbtn" id="ovBtn">📊 主线总览</button>
       <button class="refresh" id="refreshBtn">↻ 刷新</button>
@@ -406,7 +457,120 @@ async function loadSentiment(sec){
     marketLimitUp: _sentCache.breadth ? _sentCache.breadth.limitUp : null,
     northNet: _sentCache.north ? (_sentCache.north.south + _sentCache.north.north) : null
   });
+  window.__marketSentiment = si.score; // 供持仓止损止盈引用
   return { flow, si, north:_sentCache.north, breadth:_sentCache.breadth };
+}
+
+/* ============ 板块新闻接口（v6.3.6 新增）============
+   东方财富 search-api-web.eastmoney.com/search/jsonp 支持 JSONP（cb回调），
+   纯前端可用，原理和拉净值/资金一样（script注入绕过跨域）。
+   按板块关键词搜最新N条新闻，返回 [{title,content,date,mediaName,url}] */
+function getSectorNews(keyword, pageSize){
+  pageSize = pageSize || 5;
+  const param = JSON.stringify({
+    uid:"", keyword:keyword, type:["cmsArticleWebOld"],
+    client:"web", clientType:"web", clientVersion:"curr",
+    param:{ cmsArticleWebOld:{ searchScope:"default", sort:"default", pageIndex:1, pageSize:pageSize, preTag:"", postTag:"" } }
+  });
+  const cleanUrl = "https://search-api-web.eastmoney.com/search/jsonp?param=" + encodeURIComponent(param);
+  return jsonpGet(cleanUrl).then(d=>{
+    if(!d || d.code!==0 || !d.result || !d.result.cmsArticleWebOld) return [];
+    return d.result.cmsArticleWebOld.map(n=>({
+      title: n.title || "",
+      content: (n.content || "").slice(0, 120),
+      date: n.date || "",
+      media: n.mediaName || "",
+      url: n.url || ""
+    }));
+  }).catch(()=>[]);
+}
+// 板块名 → 新闻搜索关键词映射（用于 getSectorNews）
+function sectorNewsKeyword(name){
+  const map = {
+    "半导体/芯片":"半导体 芯片",
+    "有色金属(贵金属)":"有色金属 黄金",
+    "电网设备":"电网设备 特高压",
+    "电力":"电力 绿电",
+    "科技AI/全球科技":"人工智能 AI 算力 海力士 英伟达",
+    "红利":"红利 高股息",
+    "军工/航天":"军工 国防 航天 卫星",
+    "医药":"医药 医疗 创新药",
+    "新能源":"新能源 锂电池",
+    "锂矿":"锂矿 碳酸锂",
+    "恒生科技":"恒生科技 港股",
+    "光伏":"光伏 硅片",
+    "白酒消费":"白酒 消费",
+    "粮食":"粮食 农业养殖",
+    "高波固收":"可转债 债市",
+    "沪深300":"沪深300 A股",
+    "煤炭":"煤炭 煤价"
+  };
+  return map[name] || name;
+}
+
+/* ============ 持仓基金 → 板块匹配（v6.3.3 新增）============
+   每只持仓基金用自己所属板块的恐贪分算止损止盈，不再共用当前 tab 板块。
+   匹配优先级：
+   1) 代码在 17 板块候选池 pool 中 → 命中该板块（最准）
+   2) 基金名关键词匹配板块名（如名含"电力"→电力板块）
+   3) 都失败 → 返回 null，用全市场恐贪分兜底 */
+// 名称→板块关键词映射（关键词:板块索引）
+const _SECTOR_KEYWORDS = [
+  ["半导体|芯片|集成电路|5G|科技", ["半导体/芯片","科技AI/全球科技"]],
+  ["有色|黄金|白银|贵金属|稀有金属", ["有色金属(贵金属)"]],
+  ["电网|特高压|智能电网", ["电网设备"]],
+  ["电力|绿电|公用事业", ["电力"]],
+  ["军工|国防|航天|航空|军民", ["军工/航天"]],
+  ["医药|医疗|生物|健康|创新药", ["医药"]],
+  ["新能源|光伏|锂电|电池|新能源车", ["新能源","光伏"]],
+  ["锂矿|锂电|矿业", ["锂矿","新能源"]],
+  ["恒生|港股|港股通|恒生科技", ["恒生科技"]],
+  ["消费|白酒|食品|饮料", ["白酒消费"]],
+  ["农业|粮食|养殖|畜牧", ["粮食"]],
+  ["可转债|债券|纯债|利率|固收", ["高波固收"]],
+  ["沪深300|300|宽基", ["沪深300"]],
+  ["煤炭|能源", ["煤炭"]],
+  ["红利|高股息|低波", ["红利"]]
+];
+function matchSector(code, name){
+  // 1) 代码命中候选池
+  for(const sec of SECTORS){
+    if(sec.pool && sec.pool.some(f=>f.code===code)) return sec;
+  }
+  // 2) 名称关键词匹配
+  if(name){
+    for(const [kw, secNames] of _SECTOR_KEYWORDS){
+      if(new RegExp(kw).test(name)){
+        for(const sn of secNames){
+          const s = SECTORS.find(x=>x.name===sn);
+          if(s) return s;
+        }
+      }
+    }
+  }
+  return null; // 3) 兜底
+}
+// 持仓基金的恐贪分（带缓存，key=板块名）
+const _fundSentCache = {};
+async function getSentimentForFund(code, name){
+  const sec = matchSector(code, name);
+  if(!sec){
+    // 没匹配到板块，用全市场恐贪分兜底（市场广度+北向，不含板块资金）
+    const si = sentimentIndex({
+      sectorNet: null,
+      marketLimitUp: _sentCache.breadth ? _sentCache.breadth.limitUp : null,
+      northNet: _sentCache.north ? (_sentCache.north.south + _sentCache.north.north) : null
+    });
+    return { score: si.score, label: si.label, sector: null, fallback: "全市场兜底" };
+  }
+  if(_fundSentCache[sec.name]) return _fundSentCache[sec.name];
+  const r = await loadSentiment(sec).catch(()=>null);
+  if(!r){
+    return { score: 50, label: "中性", sector: sec.name, fallback: "数据缺失" };
+  }
+  const out = { score: r.si.score, label: r.si.label, sector: sec.name, fallback: null };
+  _fundSentCache[sec.name] = out;
+  return out;
 }
 
 
@@ -692,16 +856,19 @@ function getMarketBreadth(){
   }).catch(()=>null);
 }
 
-/* 沪深港通资金：dayNetAmtIn 当日净流入（亿元） */
+/* 沪深港通资金：dayNetAmtIn 当日净流入（单位：万元）→ 转为元需 ×1e4
+   v6.3.1 修复：原代码误乘 1e8（当成亿元→元），实际接口返回单位是万元，
+   导致北向显示 8400000.0 亿（真实约 84 亿被放大 1 万倍）。 */
 function getNorthFlow(){
   const url = "https://push2.eastmoney.com/api/qt/kamt/get?fields1=f1,f2,f3,f4&fields2=f51,f52,f53,f54,f55,f56,f57,f58";
   return jsonpGet(url).then(d=>{
     const dt = d && d.data;
     if(!dt) return null;
-    // hk2sh = 港股通(沪)净买额；sh2hk 反向；取当日南向合计
-    const south = (dt.hk2sh && dt.hk2sh.dayNetAmtIn||0) + (dt.hk2sz && dt.hk2sz.dayNetAmtIn||0);
-    const north = (dt.sh2hk && dt.sh2hk.dayNetAmtIn||0) + (dt.sz2hk && dt.sz2hk.dayNetAmtIn||0);
-    return { south: south*1e8, north: north*1e8, date: (dt.hk2sh&&dt.hk2sh.date2)||"" };
+    // 北向资金（外资买A股）：sh2hk=沪股通，sz2hk=深股通
+    const north = (Number(dt.sh2hk && dt.sh2hk.dayNetAmtIn)||0) + (Number(dt.sz2hk && dt.sz2hk.dayNetAmtIn)||0);
+    // 南向资金（内资买港股）：hk2sh=港股通(沪)，hk2sz=港股通(深)
+    const south = (Number(dt.hk2sh && dt.hk2sh.dayNetAmtIn)||0) + (Number(dt.hk2sz && dt.hk2sz.dayNetAmtIn)||0);
+    return { south: south*1e4, north: north*1e4, date: (dt.hk2sh&&dt.hk2sh.date2)||"" };
   }).catch(()=>null);
 }
 
@@ -1150,6 +1317,144 @@ function bossEl(sec){
 }
 
 /* ============ 消息面/情绪面渲染块 ============ */
+/* ============ 🤖 板块诊断规则引擎（v6.3.5）============
+   把"为什么弱/强"的常见模式做成规则，基于已有信号（恐贪/资金/技术面/收益）自动诊断。
+   不是真 AI（纯前端做不了），是预设模式匹配 + 结构化解读，覆盖 80% 常见场景。
+   输入：sec(板块)、sent(情绪数据)、top(Top3基金数组，取平均技术面)
+   输出：{ title, pattern, why[], advice[], severity } */
+function sectorDiagnose(sec, sent, top){
+  if(!sent) return null;
+  const si = sent.si;
+  const flow = sent.flow;
+  const flowYi = flow ? flow.net/1e8 : 0;          // 板块主力净额（亿）
+  const flowPct = flow ? (flow.netPct||0) : 0;     // 占成交额比
+  const isOutflow = flowYi < -1;                    // 净流出超1亿
+  const bigOutflow = flowYi < -5;                   // 大幅净流出超5亿
+  // Top3 平均技术面分
+  let avgScore = 0, techCnt = 0, hasDeath = false, hasBreak = false;
+  if(top && top.length){
+    top.forEach(d=>{
+      if(d.tech){ avgScore += d.tech.score; techCnt++; if(d.tech.crossTag==="死叉") hasDeath=true; }
+      if(d.m && d.m.mdd!=null && d.m.mdd < -0.2) hasBreak = true;
+    });
+    if(techCnt) avgScore = avgScore / techCnt;
+  }
+  // 近1年收益（取Top1）
+  const y1 = (top && top[0] && top[0].m && top[0].m.y1!=null) ? top[0].m.y1 : null;
+  const y1Neg = (y1 != null && y1 < 0);
+
+  const why = [], advice = [];
+  let pattern = "", severity = "neutral"; // neutral/warn/danger/good
+
+  // 规则1：资金撤离型（恐贪贪婪 + 主力净流出 + 技术弱）—— 你绿电那种
+  if(si.score >= 55 && isOutflow && avgScore < 2){
+    pattern = "资金撤离型走弱";
+    severity = "warn";
+    why.push("恐贪"+si.score+"贪婪档 + 板块主力净流出"+Math.abs(flowYi).toFixed(1)+"亿——大盘回暖，避险资金从防御板块撤离去追科技主线");
+    why.push("Top3平均技术面分"+avgScore.toFixed(1)+"（<2偏弱），趋势未转强");
+    advice.push("分批减仓：先减1/3~1/2，留部分等反弹，不要一把割");
+    advice.push("等恐贪回落到恐惧档(<45)或技术面分≥3再分批接回");
+  }
+  // 规则2：业绩真空型（利好板块+净流出+收益正但近期走弱）
+  else if(isOutflow && avgScore < 1 && !y1Neg && si.score >= 45){
+    pattern = "业绩真空期走弱";
+    severity = "warn";
+    why.push("板块主力净流出"+Math.abs(flowYi).toFixed(1)+"亿，但近1年仍+"+(y1*100).toFixed(1)+"%——政策利好已落地但业绩兑现要等，资金回避真空期");
+    why.push("市场当下只炒'能兑现业绩'的，远期政策短期不定价");
+    advice.push("等业绩公告窗口（季报/年报）或切换下一年预期时再配置");
+    advice.push("短线不必死扛，可减仓等催化，长线逻辑未改");
+  }
+  // 规3：基本面承压型（净流出 + 近1年负 + 消纳/周期类）
+  else if(bigOutflow && y1Neg){
+    pattern = "基本面承压型走弱";
+    severity = "danger";
+    why.push("板块主力大幅净流出"+Math.abs(flowYi).toFixed(1)+"亿 + 近1年"+(y1*100).toFixed(1)+"%——行业基本面尚未见拐点（如消纳压力/产能过剩/电价压制）");
+    why.push("机构共识：等基本面拐点或切换下年预期才是配置时点");
+    advice.push("严格执行止损，不抄底");
+    advice.push("等板块主力资金连续3日净流入 + 恐贪<35 恐惧档再考虑分批建仓");
+  }
+  // 规则4：趋势破位型（技术面死叉/跌破）
+  else if(hasDeath && avgScore < -1){
+    pattern = "技术趋势破位";
+    severity = "danger";
+    why.push("Top3出现死叉 + 平均技术面分"+avgScore.toFixed(1)+"——短线趋势走弱，MA5下穿MA10");
+    advice.push("跌破MA10减仓，跌破MA20止损");
+    advice.push("等金叉信号或站稳MA10再回补");
+  }
+  // 规则5：恐慌见底型（恐贪极度恐惧 + 净流出放缓）
+  else if(si.score < 30 && !bigOutflow){
+    pattern = "恐慌接近见底";
+    severity = "good";
+    why.push("恐贪"+si.score+"极度恐惧档 + 主力流出未放大——市场恐慌抛售接近尾声，逆向机会显现");
+    advice.push("可分批建仓：首批30-40%试探，金叉后加仓，突破补足");
+    advice.push("但底部可能反复，严格设止损（-5%~-8%）");
+  }
+  // 规则6：强势主线型（恐贪贪婪 + 净流入 + 技术强）
+  else if(si.score >= 60 && flowYi > 2 && avgScore >= 3){
+    pattern = "强势主线型";
+    severity = "good";
+    why.push("恐贪"+si.score+"贪婪档 + 板块主力净流入"+flowYi.toFixed(1)+"亿 + Top3技术面分"+avgScore.toFixed(1)+"——资金+情绪+技术共振，当前主线");
+    advice.push("可沿MA5轻仓跟进，创20日新高可追");
+    advice.push("但恐贪已贪婪，注意乖离率>12%短线过热信号，设好止损");
+  }
+  // 规则7：中性观望（没明显模式）
+  else {
+    pattern = "方向不明·观望";
+    severity = "neutral";
+    why.push("恐贪"+si.score+si.label+" + 主力"+(flowYi>=0?"净流入":"净流出")+Math.abs(flowYi).toFixed(1)+"亿 + 技术面分"+avgScore.toFixed(1)+"——信号矛盾，无明显趋势");
+    advice.push("空仓或≤10%观察，等信号明确");
+    advice.push("触发条件：恐贪<35恐惧档 或 技术面分≥3 + 金叉");
+  }
+
+  return { title:"🤖 板块诊断", pattern, severity, why, advice,
+    metrics: { si:si.score, flowYi, avgScore:avgScore.toFixed(1), y1 } };
+}
+
+// 渲染板块诊断区块
+function diagnoseEl(diag){
+  if(!diag) return null;
+  const el = document.createElement("div");
+  el.className = "diag-box sev-"+diag.severity;
+  const sevColor = { good:"#16a34a", warn:"#d97706", danger:"#dc2626", neutral:"#6b7280" };
+  const sevBg = { good:"#f0fdf4", warn:"#fffbeb", danger:"#fef2f2", neutral:"#f8fafc" };
+  const sevBorder = { good:"#86efac", warn:"#fcd34d", danger:"#fecaca", neutral:"#e5e7eb" };
+  const sevIcon = { good:"🟢", warn:"🟡", danger:"🔴", neutral:"⚪" };
+  let html = '<div class="diag-head"><b>'+diag.title+'</b> <span class="diag-pattern">'+sevIcon[diag.severity]+' '+diag.pattern+'</span></div>';
+  html += '<div class="diag-why">';
+  diag.why.forEach(w=>{ html += '<div class="diag-line">· '+w+'</div>'; });
+  html += '</div>';
+  html += '<div class="diag-advice-head">📋 操作建议</div>';
+  html += '<div class="diag-advice">';
+  diag.advice.forEach(a=>{ html += '<div class="diag-line">→ '+a+'</div>'; });
+  html += '</div>';
+  html += '<div class="diag-note">⚠️ 基于恐贪/资金/技术面/收益的规则匹配，覆盖常见模式但非实时新闻分析。具体板块政策/业绩/事件需自行核实。</div>';
+  el.innerHTML = html;
+  return el;
+}
+
+/* ============ 📰 板块资讯渲染（v6.3.6）============ */
+function newsEl(sec, news){
+  const el = document.createElement("div");
+  el.className = "news-box";
+  if(!news || !news.length){
+    el.innerHTML = '<div class="news-head">📰 板块资讯 <small>暂无新闻</small></div><div class="news-empty">未拉取到相关资讯，可能接口限流，稍后刷新重试</div>';
+    return el;
+  }
+  let html = '<div class="news-head">📰 板块资讯 · '+sec.name+' <small>最新 '+news.length+' 条 · 自行判断利好利空</small></div>';
+  news.forEach(n=>{
+    const d = n.date ? n.date.slice(5,10) : ""; // MM-DD
+    html += '<div class="news-item">';
+    html += '<div class="news-meta">'+d+' · '+n.media+'</div>';
+    html += '<a class="news-title" href="'+n.url+'" target="_blank">'+n.title+'</a>';
+    if(n.content) html += '<div class="news-summary">'+n.content+'…</div>';
+    html += '<a class="news-link" href="'+n.url+'" target="_blank">🔗 查看原文 →</a>';
+    html += '</div>';
+  });
+  html += '<div class="news-empty" style="padding:6px">💡 看标题/摘要自行判断：政策利好/业绩超预期=利好，减持/监管/业绩雷=利空</div>';
+  el.innerHTML = html;
+  return el;
+}
+
 function sentimentEl(sec, sent){
   const el = document.createElement("div");
   el.className = "sent";
@@ -1162,9 +1467,9 @@ function sentimentEl(sec, sent){
     const sign = total>=0 ? "净流入" : "净流出";
     northTxt = sign + " " + Math.abs(total).toFixed(1) + " 亿" + (sent.north.date?("("+sent.north.date+")"):"");
   }
-  // 广度
+  // 广度（全市场，非单板块）
   let brTxt = "—";
-  if(sent.breadth && sent.breadth.limitUp!=null) brTxt = "涨停 " + sent.breadth.limitUp + " 家";
+  if(sent.breadth && sent.breadth.limitUp!=null) brTxt = "全市场涨停 " + sent.breadth.limitUp + " 家";
   // 资金行
   let flowRow = '<div class="sent-row"><span class="sk">板块主力资金</span>';
   if(ft){
@@ -1189,7 +1494,7 @@ function sentimentEl(sec, sent){
     thermo +
     flowRow +
     '<div class="sent-row"><span class="sk">沪深港通</span><b class="north">'+northTxt+'</b></div>' +
-    '<div class="sent-row"><span class="sk">市场广度</span><b>'+brTxt+'</b></div>' +
+    '<div class="sent-row"><span class="sk">市场广度<span class="sub">(全A)</span></span><b>'+brTxt+'</b></div>' +
     '<div class="sent-note">💡 资金/广度/北向为公开的实时情绪指标；新闻事件需你自行判断——利好政策/业绩超预期通常催化上涨，利空（减持/监管）反之。本区不作具体新闻抓取。</div>';
   return el;
 }
@@ -1216,14 +1521,46 @@ function renderCards(){
   (async()=>{
     box.innerHTML = "";
     if(current.boss) box.appendChild(bossEl(current));
-    // 情绪面模块：板块资金 + 恐贪指数
+    // 情绪面模块：板块资金 + 恐贪指数（先拉，但不立即渲染——等 top 算完一起渲染，因为诊断需要 top 的技术面）
     const sent = await loadSentiment(current).catch(()=>null);
-    if(sent) box.appendChild(sentimentEl(current, sent));
     const top = await rankPool(current);
     if(!top.length){
-      box.innerHTML = '<div class="disc"><b>数据接口暂不可用</b>：候选池基金都未能获取数据，请稍后点"↻ 刷新"重试（可能接口限流或非交易时段）。</div>';
+      // top 为空时直接渲染情绪区 + 错误提示
+      if(sent) box.appendChild(sentimentEl(current, sent));
+      box.innerHTML += '<div class="disc"><b>数据接口暂不可用</b>：候选池基金都未能获取数据，请稍后点"↻ 刷新"重试（可能接口限流或非交易时段）。</div>';
       return;
     }
+    // 渲染情绪区
+    if(sent) box.appendChild(sentimentEl(current, sent));
+    // 🤖 板块诊断规则引擎（v6.3.5）：基于恐贪+资金+技术面+收益自动诊断
+    if(sent){
+      const diag = sectorDiagnose(current, sent, top);
+      const diagEl_ = diagnoseEl(diag);
+      if(diagEl_) box.appendChild(diagEl_);
+    }
+    // 📰 板块资讯（v6.3.6）：异步拉最新5条新闻，先占位再填充
+    // 注意：必须直接保存 placeholder 引用，不能用临时 div 提取（firstElementChild 第二次返回 null）
+    const newsPlaceholder = document.createElement("div");
+    newsPlaceholder.className = "news-box";
+    newsPlaceholder.innerHTML = '<div class="news-loading">📰 正在拉取板块资讯…</div>';
+    box.appendChild(newsPlaceholder);
+    // 加 6 秒超时兜底：如果接口超时/失败，显示"暂无"而不是无限等待
+    const newsTimer = setTimeout(()=>{
+      if(newsPlaceholder.parentNode){
+        newsPlaceholder.innerHTML = '<div class="news-empty" style="padding:14px">📰 资讯加载超时<br><span style="font-size:10px">接口可能限流，点"↻ 刷新"重试</span></div>';
+      }
+    }, 6000);
+    getSectorNews(sectorNewsKeyword(current.name), 5).then(news=>{
+      clearTimeout(newsTimer);
+      if(!newsPlaceholder.parentNode) return; // 已不在 DOM 里（用户切换了板块）
+      const newEl = newsEl(current, news || []);
+      newsPlaceholder.parentNode.replaceChild(newEl, newsPlaceholder);
+    }).catch(()=>{
+      clearTimeout(newsTimer);
+      if(newsPlaceholder.parentNode){
+        newsPlaceholder.innerHTML = '<div class="news-empty" style="padding:14px">📰 资讯加载失败<br><span style="font-size:10px">点"↻ 刷新"重试，或检查网络</span></div>';
+      }
+    });
     // 动态提示当前最强（主动基才显示经理；ETF为指数团队则跳过）
     const lead = top[0];
     if(lead.mgr && lead.mgr!=="指数团队" && lead.mgr!=="指数"){
@@ -1296,12 +1633,12 @@ async function renderOverview(){
       });
       let northTxt = "—";
       if(n){ const t=(n.south+n.north)/1e8; northTxt=(t>=0?"净流入":"净流出")+" "+Math.abs(t).toFixed(1)+" 亿"; }
-      let brTxt = b&&b.limitUp!=null ? "涨停 "+b.limitUp+" 家" : "—";
+      let brTxt = b&&b.limitUp!=null ? "全A涨停 "+b.limitUp+" 家" : "—";
       sentTop.innerHTML = '<div class="sent-head">📡 全市场情绪 · 恐贪指数</div>' +
         '<div class="thermo"><div class="th-track"><div class="th-fill th-'+si.cls+'" style="width:'+si.score+'%"></div><div class="th-mark" style="left:'+si.score+'%"></div></div>'+
         '<div class="th-meta"><span class="th-score">恐贪 '+si.score+'</span><span class="th-label '+si.cls+'">'+si.label+'</span></div></div>' +
         '<div class="sent-row"><span class="sk">沪深港通</span><b class="north">'+northTxt+'</b></div>' +
-        '<div class="sent-row"><span class="sk">市场广度</span><b>'+brTxt+'</b></div>';
+        '<div class="sent-row"><span class="sk">市场广度<span class="sub">(全A)</span></span><b>'+brTxt+'</b></div>';
     }catch(e){ sentTop.innerHTML = '<div class="sent-head">📡 全市场情绪（数据暂缺）</div>'; }
   })();
   cont.innerHTML = '<div class="loading">正在加载 12 个板块的实时研判…（约需十几秒，请稍候）</div>';
@@ -1394,6 +1731,238 @@ async function renderOverview(){
   };
 }
 
+/* ============ 持仓盈亏 & 止损止盈算法（v6.3.1 新增）============ */
+// 取最新净值：从 series 末尾取 v
+function latestNav(d){
+  if(d && d.series && d.series.length) return d.series[d.series.length-1].v;
+  return null;
+}
+// 判断板块属性：防御/成长/周期/平衡（按基金名关键词）
+function fundStyle(name){
+  if(!name) return "balance";
+  const n = name;
+  if(/电力|电网|公用|绿电|水务|燃气|公路|铁路|港口|机场|银行|红利|高股息|债|纯债|利率|央企现代能源/.test(n)) return "defend";
+  if(/半导体|芯片|科技|信息|人工智能|AI|军工|航天|国防|新能源|光伏|锂电|电池|创新药|生物|医药|计算机|传媒|游戏|机器人/.test(n)) return "growth";
+  if(/有色|黄金|白银|煤炭|钢铁|证券|保险|地产|建材|化工|石油|资源|稀有/.test(n)) return "cycle";
+  return "balance";
+}
+// 各属性基础止损/止盈比例
+const SL_PROFILE = {
+  defend:  { stop:0.08, take:0.12, label:"防御·低波动" },
+  growth:  { stop:0.12, take:0.25, label:"成长·高弹性" },
+  cycle:   { stop:0.15, take:0.30, label:"周期·强波动" },
+  balance: { stop:0.10, take:0.18, label:"平衡·默认" }
+};
+// 计算止损止盈线：结合恐贪分调整
+// 恐贪来源：window.__marketSentiment（renderOverview 算的全市场分）；没有则 50 中性
+function calcStopTake(cost, style, sentimentScore){
+  const p = SL_PROFILE[style] || SL_PROFILE.balance;
+  let stopRate = p.stop, takeRate = p.take;
+  const s = (sentimentScore!=null) ? sentimentScore : (window.__marketSentiment||50);
+  // 恐惧档（<45）：止损放宽 3%（别割在低位），止盈上调 5%（多拿等反弹）
+  if(s < 45){ stopRate += 0.03; takeRate += 0.05; }
+  // 贪婪档（>=60）：止损收紧 2%（保利润），止盈下调 5%（早落袋）
+  else if(s >= 60){ stopRate -= 0.02; takeRate -= 0.05; }
+  // 极度贪婪（>=80）：再收紧 2%
+  if(s >= 80){ stopRate -= 0.02; }
+  stopRate = Math.max(0.04, Math.min(0.20, stopRate));
+  takeRate = Math.max(0.08, Math.min(0.40, takeRate));
+  const stopPrice = cost * (1 - stopRate);
+  const takePrice = cost * (1 + takeRate);
+  const reasons = [];
+  reasons.push(p.label);
+  if(s < 45) reasons.push("恐贪"+s+"恐惧档→止损放宽3%/止盈+5%（避免割在低位）");
+  else if(s >= 80) reasons.push("恐贪"+s+"极度贪婪→止损再收紧2%（保利润）");
+  else if(s >= 60) reasons.push("恐贪"+s+"贪婪档→止损收紧2%/止盈-5%（早落袋）");
+  else reasons.push("恐贪"+s+"中性档→用基础比例");
+  return { stopRate, takeRate, stopPrice, takePrice, styleLabel:p.label, reasons };
+}
+
+/* ============ 止损后回本路径规划（v6.3.4 新增）============
+   分三块：① 再进场信号 ② 分批买入计划 ③ 回本时间测算 */
+
+// ① 再进场信号：满足2个以上可分批进场
+// 信号：A.恐贪<45(恐惧档逆向机会) B.技术score>=3(转强) C.金叉或多头 D.站上MA10
+function calcRebuySignals(d, fundSent){
+  if(!d || !d.tech) return { signals:[], count:0, canRebuy:false };
+  const t = d.tech;
+  const sentScore = (fundSent && fundSent.score!=null) ? fundSent.score : 50;
+  const signals = [];
+  if(sentScore < 45) signals.push({ key:"A", name:"恐贪"+sentScore+"恐惧档", desc:"市场恐慌，逆向机会" });
+  if(t.score >= 3) signals.push({ key:"B", name:"技术面分"+t.score, desc:"轻仓跟进以上，趋势转强" });
+  if(t.crossTag === "金叉") signals.push({ key:"C", name:"MA5金叉MA10", desc:"短线转强信号" });
+  else if(t.crossTag === "多头") signals.push({ key:"C", name:"金叉后多头延续", desc:"MA5在MA10上方运行" });
+  if(t.close != null && t.m10 != null && t.close > t.m10) signals.push({ key:"D", name:"站上MA10", desc:"净值站稳10日线" });
+  return { signals, count:signals.length, canRebuy: signals.length >= 2 };
+}
+
+// ② 分批买入计划：基于原投入本金的比例，分3批
+// 恐惧档(<45)：首批40% / 确认30% / 突破30%
+// 中性档(45-60)：首批30% / 确认40% / 突破30%
+// 贪婪档(>=60)：不建议进场，等回调
+function calcRebuyPlan(costValue, fundSent){
+  const s = (fundSent && fundSent.score!=null) ? fundSent.score : 50;
+  if(s >= 60) return { advise:"贪婪档不建议进场，等恐贪回落到中性或恐惧档再分批建仓", batches:[] };
+  let p1, p2, p3;
+  if(s < 45){ p1=0.40; p2=0.30; p3=0.30; }
+  else { p1=0.30; p2=0.40; p3=0.30; }
+  const batches = [
+    { phase:"首批·试探", pct:p1, amount: costValue*p1, trigger:"再进场信号≥2个" },
+    { phase:"二批·确认", pct:p2, amount: costValue*p2, trigger:"净值站稳MA5或金叉后多头延续" },
+    { phase:"三批·突破", pct:p3, amount: costValue*p3, trigger:"创近20日新高或恐贪回升到中性" }
+  ];
+  return { advise:"分3批建仓，首批试探、确认加仓、突破补足，避免一把梭", batches };
+}
+
+// ③ 回本路径测算
+// 假设止损时剩余份额按止损价卖出 → 实现止损亏损
+// 总亏损 = 已实现盈亏(realized) + 止损实现亏损
+// 回本需涨% = 总亏损率 / (1 - 总亏损率)
+// 按板块近1年年化估乐观/中性/悲观三档月数
+function calcRecoveryPath(item, d, sl, realized){
+  if(!item.cost || !item.shares || !sl) return null;
+  const cost = item.cost, shares = item.shares;
+  const costValue = cost * shares;           // 剩余部分投入本金
+  // 止损实现亏损 = (止损价 - 成本) × 份额（负数=亏损）
+  const stopLoss = (sl.stopPrice - cost) * shares;
+  // 总亏损 = 已实现 + 止损实现（realized 可能是之前买卖的，stopLoss 是这次止损的）
+  const totalLoss = (realized||0) + stopLoss;
+  const lossRate = totalLoss / costValue;    // 总亏损比例（负数）
+  const absLossRate = Math.abs(lossRate);
+  // 回本需涨%：亏X%要涨 X/(1-X)% 回本
+  const needGain = absLossRate / (1 - absLossRate);
+  // 板块历史年化（用近1年收益 d.m.y1）
+  const y1 = (d && d.m && d.m.y1!=null) ? d.m.y1 : 0.10; // 默认10%
+  const y3 = (d && d.m && d.m.y3!=null) ? d.m.y3 : 0.08;
+  const avgAnnual = (y1 + y3) / 2;
+  // 三档预估：乐观×1.3 / 中性×0.8 / 悲观×0.3（悲观可能为负=持续亏）
+  const optAnnual = avgAnnual * 1.3;
+  const neuAnnual = avgAnnual * 0.8;
+  const pesAnnual = avgAnnual * 0.3;
+  const estMonths = (annual) => {
+    if(annual <= 0) return null; // 负年化=无法回本
+    return Math.ceil(needGain / annual * 12);
+  };
+  return {
+    stopLoss, totalLoss, lossRate, absLossRate, needGain,
+    avgAnnual,
+    optimistic: { annual: optAnnual, months: estMonths(optAnnual) },
+    neutral:    { annual: neuAnnual, months: estMonths(neuAnnual) },
+    pessimistic:{ annual: pesAnnual, months: estMonths(pesAnnual) }
+  };
+}
+
+// 渲染单只持仓的盈亏 + 止损止盈框
+// 已实现盈亏（item.realized，元）由用户手动填写——表示之前买卖已落袋的部分
+// 总盈亏 = 浮动盈亏 + 已实现盈亏
+// fundSent：该持仓基金对应板块的恐贪分 {score,label,sector,fallback}（v6.3.3：每只用自己板块的，不再共用当前 tab）
+function posBoxHtml(item, d, fundSent){
+  if(item.cost==null || item.shares==null) return "";
+  const nav = latestNav(d);
+  if(nav==null) return '<div class="pos-box"><div class="pos-head">净值未取到，暂无法算盈亏</div></div>';
+  const cost = item.cost, shares = item.shares;
+  const costValue = cost * shares;          // 投入本金
+  const nowValue = nav * shares;            // 当前市值
+  const pnl = nowValue - costValue;         // 浮动盈亏金额
+  const pnlRate = (nav - cost) / cost;      // 浮动盈亏比例
+  const realized = (item.realized!=null && !isNaN(parseFloat(item.realized))) ? parseFloat(item.realized) : 0;
+  const totalPnl = pnl + realized;          // 总盈亏 = 浮动 + 已实现
+  const cls_ = totalPnl >= 0 ? "gain" : "loss";
+  const pnlCls = pnl >= 0 ? "up" : "down";
+  const totalCls = totalPnl >= 0 ? "up" : "down";
+  const style = fundStyle(d.name);
+  const sentScore = (fundSent && fundSent.score!=null) ? fundSent.score : 50;
+  const sl = calcStopTake(cost, style, sentScore);
+  // 离止损线还有多远（相对当前净值）
+  const distStop = (nav - sl.stopPrice) / nav;
+  const distTake = (sl.takePrice - nav) / nav;
+  const stopBroke = nav <= sl.stopPrice;
+  const takeHit = nav >= sl.takePrice;
+  let alertTxt = "";
+  if(stopBroke) alertTxt = "⚠️ 当前净值已跌破止损线，建议减仓止损";
+  else if(takeHit) alertTxt = "✅ 当前净值已达止盈线，建议分批止盈";
+  else if(distStop < 0.02) alertTxt = "⚠️ 距止损线不足2%，密切关注";
+  const fmt = (x)=> Math.abs(x)>=10000 ? (x/10000).toFixed(2)+"万" : x.toFixed(2);
+  // 恐贪来源说明
+  const sentTag = fundSent
+    ? (fundSent.sector ? '板块：'+fundSent.sector+' · 恐贪 '+fundSent.score+' '+fundSent.label : (fundSent.fallback||'全市场')+' · 恐贪 '+fundSent.score+' '+fundSent.label)
+    : '恐贪 50 中性';
+  let html = '<div class="pos-box '+cls_+'">';
+  html += '<div class="pos-head"><span><b>持仓盈亏</b> · '+sl.styleLabel+'</span><span class="pos-edit" data-code="'+item.code+'">✎ 改成本/份额</span></div>';
+  html += '<div class="pos-pnl">';
+  html += '<div class="pi"><span class="k">当前净值</span><div class="v">'+nav.toFixed(4)+'</div></div>';
+  html += '<div class="pi"><span class="k">当前市值</span><div class="v">'+fmt(nowValue)+'</div></div>';
+  html += '<div class="pi"><span class="k">浮动盈亏</span><div class="v '+pnlCls+'">'+(pnl>=0?"+":"-")+fmt(Math.abs(pnl))+'</div></div>';
+  html += '<div class="pi"><span class="k">浮动盈亏率</span><div class="v '+pnlCls+'">'+(pnlRate*100>=0?"+":"")+(pnlRate*100).toFixed(2)+'%</div></div>';
+  html += '</div>';
+  // 已实现盈亏输入行
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-top:8px;padding-top:7px;border-top:1px dashed #e5e7eb">';
+  html += '<span style="color:var(--sub)">已实现盈亏（元）·<span style="font-size:10px">之前买卖已落袋</span></span>';
+  html += '<input type="number" class="realized-input pos-input" data-code="'+item.code+'" value="'+(item.realized!=null?item.realized:'')+'" placeholder="如 -1500（亏损）或 +800（盈利），0/留空=无" step="0.01" style="width:160px;margin-top:0;text-align:right">';
+  html += '</div>';
+  // 总盈亏汇总
+  html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;padding:7px 9px;background:#f8fafc;border-radius:8px">';
+  html += '<span style="font-size:12px;font-weight:700;color:var(--ink)">总盈亏（浮动+已实现）</span>';
+  html += '<span class="'+totalCls+'" style="font-size:16px;font-weight:800">'+(totalPnl>=0?"+":"-")+fmt(Math.abs(totalPnl))+'</span>';
+  html += '</div>';
+  html += '<div class="sl-box">';
+  html += '<div class="sl-title">📐 建议止损/止盈线 · <span style="font-size:10px;font-weight:600;color:#92400e">'+sentTag+'</span></div>';
+  html += '<div class="sl-line"><span>止损价 <b class="sl-stop">'+sl.stopPrice.toFixed(4)+'</b>（-'+(sl.stopRate*100).toFixed(1)+'%）</span><span style="font-size:10px;color:#92400e">'+(stopBroke?'<b style="color:#dc2626">已跌破</b>':('距当前 '+(-distStop*100).toFixed(1)+'%'))+'</span></div>';
+  html += '<div class="sl-line"><span>止盈价 <b class="sl-take">'+sl.takePrice.toFixed(4)+'</b>（+'+(sl.takeRate*100).toFixed(1)+'%）</span><span style="font-size:10px;color:#92400e">'+(takeHit?'<b style="color:#16a34a">已达标</b>':('距当前 +'+(distTake*100).toFixed(1)+'%'))+'</span></div>';
+  html += '<div class="sl-why">'+sl.reasons.join('；')+'。止损/止盈为量化参考，非投资建议，需结合自身风险承受力。</div>';
+  if(alertTxt) html += '<div class="sl-why" style="background:#fef2f2;color:#b91c1c;font-weight:700">'+alertTxt+'</div>';
+  html += '</div>';
+
+  // ====== 🔄 止损后回本路径规划（v6.3.4）======
+  const rebuy = calcRebuySignals(d, fundSent);
+  const plan = calcRebuyPlan(costValue, fundSent);
+  const rec = calcRecoveryPath(item, d, sl, realized);
+  html += '<div class="sl-box" style="background:#eff6ff;border-color:#93c5fd;margin-top:8px">';
+  html += '<div class="sl-title" style="color:#1d4ed8">🔄 止损后回本路径规划</div>';
+
+  // ① 再进场信号
+  html += '<div class="sl-line" style="margin-top:4px"><span style="font-weight:700;color:#1e293b">① 什么时候买回来？</span></div>';
+  if(rebuy.signals.length === 0){
+    html += '<div class="sl-why" style="background:#fff">当前无再进场信号，继续观望。信号触发条件：恐贪回落到恐惧档(&lt;45) / 技术面分≥3 / MA5金叉MA10 / 净值站上MA10，满足2个以上可分批进场。</div>';
+  } else {
+    html += '<div class="sl-why" style="background:'+(rebuy.canRebuy?'#f0fdf4':'#fff')+'">';
+    html += '已触发 '+rebuy.count+'/4 信号'+(rebuy.canRebuy?' <b style="color:#16a34a">✓ 可分批进场</b>':'（需≥2个）')+'：<br>';
+    rebuy.signals.forEach(s=>{ html += '· '+s.name+'：'+s.desc+'<br>'; });
+    html += '</div>';
+  }
+
+  // ② 分批买入计划
+  html += '<div class="sl-line" style="margin-top:6px"><span style="font-weight:700;color:#1e293b">② 买多少钱？</span></div>';
+  if(plan.batches.length === 0){
+    html += '<div class="sl-why" style="background:#fef2f2">'+plan.advise+'</div>';
+  } else {
+    html += '<div class="sl-why" style="background:#fff">'+plan.advise+'：</div>';
+    plan.batches.forEach(b=>{
+      html += '<div class="sl-line"><span>'+b.phase+' <b style="color:#1d4ed8">'+(b.pct*100).toFixed(0)+'%</b>（≈'+fmt(b.amount)+'元）</span><span style="font-size:10px;color:#6b7280">'+b.trigger+'</span></div>';
+    });
+  }
+
+  // ③ 回本时间测算
+  if(rec){
+    html += '<div class="sl-line" style="margin-top:6px"><span style="font-weight:700;color:#1e293b">③ 什么时候回本？</span></div>';
+    html += '<div class="sl-why" style="background:#fff">';
+    html += '假设止损价 '+sl.stopPrice.toFixed(4)+' 卖出剩余 '+shares+' 份：<br>';
+    html += '· 止损实现亏损：<b style="color:#dc2626">'+(rec.stopLoss>=0?'+':'')+fmt(rec.stopLoss)+'元</b><br>';
+    html += '· 总亏损（含已实现）：<b style="color:#dc2626">'+(rec.totalLoss>=0?'+':'')+fmt(rec.totalLoss)+'元</b>（'+(rec.lossRate*100).toFixed(1)+'%）<br>';
+    html += '· 回本需涨：<b style="color:#b45309">+'+(rec.needGain*100).toFixed(1)+'%</b><br>';
+    html += '· 板块近1-3年年化 ≈ '+(rec.avgAnnual*100).toFixed(1)+'%，回本预估：<br>';
+    const fmtM = (m)=> m==null ? '无法回本(年化为负)' : '约 '+m+' 个月';
+    html += '&nbsp;&nbsp;🟢 乐观(年化'+(rec.optimistic.annual*100).toFixed(1)+'%)：'+fmtM(rec.optimistic.months)+'<br>';
+    html += '&nbsp;&nbsp;🟡 中性(年化'+(rec.neutral.annual*100).toFixed(1)+'%)：'+fmtM(rec.neutral.months)+'<br>';
+    html += '&nbsp;&nbsp;🔴 悲观(年化'+(rec.pessimistic.annual*100).toFixed(1)+'%)：'+fmtM(rec.pessimistic.months);
+    html += '</div>';
+    html += '<div class="sl-why" style="background:#fffbeb;color:#92400e;font-size:10px;margin-top:4px">⚠️ 回本月数基于板块历史年化估算，不代表未来；若悲观档为"无法回本"，说明该板块长期趋势走弱，需考虑换基。</div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
 /* ============ 自选对比模块 ============ */
 const CUSTOM_KEY = "fund_selector_custom_v1";
 function getCustoms(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY)||"[]"); }catch(e){ return []; } }
@@ -1448,27 +2017,27 @@ function renderCustom(){
   const box = $("#custom"); box.innerHTML = "";
   const bar = document.createElement("div");
   bar.className = "cbar";
-  bar.innerHTML = '<button class="favbtn" id="cusBack">← 返回板块</button><span style="font-size:12px;color:var(--sub)">输入基金代码，和当前板块 Top3 做横向对比</span>';
+  bar.innerHTML = '<button class="favbtn" id="cusBack">← 返回板块</button><span style="font-size:12px;color:var(--sub)">输入你实际持有的基金 + 成本 + 份额，自动算盈亏并给止损/止盈线</span>';
   box.appendChild(bar);
 
   const form = document.createElement("div");
   form.className = "cform";
   form.innerHTML =
     '<div class="row">' +
-      '<input type="text" id="cusCode" placeholder="输入基金代码，如 320007 或 512480" maxlength="10">' +
+      '<input type="text" id="cusCode" placeholder="基金代码，如 019593" maxlength="10">' +
       '<select id="cusType"><option value="fund">场外基金</option><option value="etf-sh">沪市ETF</option><option value="etf-sz">深市ETF</option></select>' +
-      '<button class="refresh" id="cusAdd">添加自选</button>' +
+      '<button class="refresh" id="cusAdd">添加持仓</button>' +
     '</div>' +
-    '<div class="hint">支持的代码：场外基金（6位，如 320007）、沪市ETF（51/56开头，如 512480）、深市ETF（15/16开头，如 159915）</div>';
+    '<div class="pos-fields">' +
+      '<div><label>成本净值（元/份）</label><input type="number" id="cusCost" class="pos-input" placeholder="如 1.0520" step="0.0001"></div>' +
+      '<div><label>持有份额（份）</label><input type="number" id="cusShares" class="pos-input" placeholder="如 10000" step="1"></div>' +
+    '</div>' +
+    '<div class="hint">填了成本+份额才会算盈亏和止损止盈线；只填代码也可作为自选观察（不显示盈亏）</div>';
   box.appendChild(form);
 
   const listBox = document.createElement("div");
   listBox.id = "cusList";
   box.appendChild(listBox);
-
-  const compareBox = document.createElement("div");
-  compareBox.id = "cusCompare";
-  box.appendChild(compareBox);
 
   $("#cusBack").onclick = ()=>{
     box.classList.add("hidden"); box.innerHTML="";
@@ -1487,6 +2056,15 @@ async function addCustom(){
   if(type==="etf-sh"){ kind="etf"; market="sh"; }
   else if(type==="etf-sz"){ kind="etf"; market="sz"; }
 
+  // 持仓数据（可选）
+  const costRaw = $("#cusCost").value.trim();
+  const sharesRaw = $("#cusShares").value.trim();
+  let cost = null, shares = null;
+  if(costRaw){ cost = parseFloat(costRaw); if(isNaN(cost)||cost<=0){ alert("成本净值要填正数"); return; } }
+  if(sharesRaw){ shares = parseFloat(sharesRaw); if(isNaN(shares)||shares<=0){ alert("持有份额要填正数"); return; } }
+  // 二者要么都填、要么都不填
+  if((cost!=null) !== (shares!=null)){ alert("成本净值和持有份额需同时填写，或同时留空（仅观察）"); return; }
+
   // 添加前先解析真实名称并自动纠正类型（防止股基同号或类型选错，如 002207 实际是场外基金）
   const resolved = await resolveFundName(code, market, kind).catch(()=>null);
   if(resolved){
@@ -1498,10 +2076,14 @@ async function addCustom(){
   }
 
   const list = getCustoms();
-  if(list.some(x=>x.code===code)){ alert("该基金已在自选列表"); return; }
-  list.push({code, kind, market, name:resolved||code});
+  if(list.some(x=>x.code===code)){ alert("该基金已在持仓列表"); return; }
+  const item = {code, kind, market, name:resolved||code};
+  if(cost!=null && shares!=null){ item.cost = cost; item.shares = shares; }
+  list.push(item);
   saveCustoms(list);
   $("#cusCode").value = "";
+  $("#cusCost").value = "";
+  $("#cusShares").value = "";
   refreshCustomList();
 }
 function removeCustom(code){
@@ -1511,81 +2093,83 @@ function removeCustom(code){
 }
 async function refreshCustomList(){
   const box = $("#cusList"); box.innerHTML = "";
+  // 先拉一次当前板块恐贪，填充 window.__marketSentiment 供止损止盈引用（切到对应板块再开持仓更准）
+  await loadSentiment(current).catch(()=>{});
   const list = getCustoms();
   if(!list.length){
-    box.innerHTML = '<div class="ctitle">我的自选<small>暂无，请在上方添加</small></div>';
-    $("#cusCompare").innerHTML = "";
+    box.innerHTML = '<div class="ctitle">我的持仓<small>暂无，请在上方添加</small></div>';
     return;
   }
-  box.innerHTML = '<div class="ctitle">我的自选<small>共 '+list.length+' 只</small></div>';
+  const hasPos = list.some(x=>x.cost!=null && x.shares!=null);
+  box.innerHTML = '<div class="ctitle">我的持仓<small>共 '+list.length+' 只'+(hasPos?' · 含盈亏与止损止盈线':'')+'</small></div>';
   const holder = document.createElement("div");
   holder.className = "clist";
   box.appendChild(holder);
 
-  // 并行加载自选基金
+  // 并行加载持仓基金
   const ds = await Promise.all(list.map(loadCustomFund));
+  // 并行拉每只持仓基金对应板块的恐贪分（v6.3.3：每只用自己板块的，不再共用当前 tab）
+  const sents = await Promise.all(ds.map(d=> getSentimentForFund(d.code, d.name).catch(()=>null) ));
   holder.innerHTML = "";
-  ds.forEach(d=>{
+  ds.forEach((d,i)=>{
     const el = cardEl(d);
+    const item = list[i]; // 原始持仓数据（含 cost/shares/realized）
+    const fundSent = sents[i]; // 该基金对应板块的恐贪分
     // 给标题加删除按钮
     const top = el.querySelector(".fc-top div:first-child");
     top.innerHTML += '<span class="del-btn" data-code="'+d.code+'">删除</span>';
     el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
+    // 追加持仓盈亏 + 止损止盈框
+    const posHtml = posBoxHtml(item, d, fundSent);
+    if(posHtml){
+      const wrap = document.createElement("div");
+      wrap.innerHTML = posHtml;
+      el.appendChild(wrap.firstElementChild);
+      // 绑定"改成本/份额"和"已实现盈亏"
+      el.querySelectorAll(".pos-edit").forEach(btn=>{
+        btn.onclick = ()=> editPos(item);
+      });
+      const ri = el.querySelector(".realized-input");
+      if(ri){
+        ri.onchange = ()=> saveRealized(item, ri.value);
+      }
+    }
     holder.appendChild(el);
   });
-
-  // 自动对比当前板块 Top3
-  renderCompare(ds);
+  // 不再做跨板块对比：持仓跨多板块，与"当前板块 Top3"对比无意义
 }
-async function renderCompare(customDs){
-  const box = $("#cusCompare"); box.innerHTML = "";
-  if(!customDs.length) return;
-  box.innerHTML = '<div class="ctitle">📊 vs '+current.name+' 板块 Top3<small>差距一目了然</small></div><div class="loading">加载板块对比数据…</div>';
-  const sectorDs = await rankPool(current);
-  const all = [...customDs, ...sectorDs];
-  const rows = [
-    {k:"name", label:"基金"},
-    {k:"today", label:"今日涨跌"},
-    {k:"y1", label:"近1年"},
-    {k:"y3", label:"近3年"},
-    {k:"mdd", label:"最大回撤"},
-    {k:"score", label:"技术面分"},
-    {k:"verdict", label:"结论"},
-    {k:"action", label:"操作建议"}
-  ];
-  let html = '<div class="compare-wrap"><table class="compare-table"><thead><tr><th>指标</th>';
-  all.forEach(d=>{
-    const name = d.name.length>10 ? d.name.slice(0,9)+"…" : d.name;
-    html += '<th><div class="fund-name">'+name+'</div><div class="fund-code">'+d.code+'</div></th>';
-  });
-  html += '</tr></thead><tbody>';
-  rows.forEach(r=>{
-    html += '<tr><td>'+r.label+'</td>';
-    all.forEach(d=>{
-      let v;
-      if(r.k==="name"){
-        v = '<div class="fund-name">'+d.name+'</div>';
-      } else if(r.k==="today"){
-        v = d.quote ? '<span class="'+cls(d.quote.pct)+'">'+pct(d.quote.pct)+'</span>' : '—';
-      } else if(r.k==="y1"){
-        v = (d.m && d.m.y1!=null) ? pct(d.m.y1) : '—';
-      } else if(r.k==="y3"){
-        v = (d.m && d.m.y3!=null) ? pct(d.m.y3) : '—';
-      } else if(r.k==="mdd"){
-        v = (d.m && d.m.mdd!=null) ? pct(d.m.mdd) : '—';
-      } else if(r.k==="score"){
-        v = d.tech ? d.tech.score : '—';
-      } else if(r.k==="verdict"){
-        v = d.tech ? '<span class="verdict '+d.tech.vcls+'">'+d.tech.verdict+'</span>' : '—';
-      } else if(r.k==="action"){
-        v = d.tech ? '<span style="font-size:11px">'+d.tech.action+'</span>' : '—';
-      }
-      html += '<td>'+v+'</td>';
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table></div>';
-  box.innerHTML = html;
+// 保存已实现盈亏
+function saveRealized(item, val){
+  const list = getCustoms();
+  const idx = list.findIndex(x=>x.code===item.code);
+  if(idx<0) return;
+  const v = parseFloat(val);
+  if(isNaN(v)){ delete list[idx].realized; }
+  else { list[idx].realized = v; }
+  saveCustoms(list);
+  // 局部刷新当前卡片（只刷一个，避免全部重拉数据）
+  const allHolders = document.querySelectorAll("#cusList .fcard");
+  // 简化：直接调 refreshCustomList（重新拉数据，但用户感知是立刻更新）
+  refreshCustomList();
+}
+// 编辑某只持仓的成本/份额
+function editPos(item){
+  const cost = prompt("修改成本净值（元/份），留空则清除持仓数据仅作观察", item.cost||"");
+  if(cost===null) return;
+  const shares = prompt("修改持有份额（份），留空则清除持仓数据仅作观察", item.shares||"");
+  if(shares===null) return;
+  const list = getCustoms();
+  const idx = list.findIndex(x=>x.code===item.code);
+  if(idx<0) return;
+  if(cost==="" || shares===""){
+    delete list[idx].cost; delete list[idx].shares;
+  } else {
+    const c = parseFloat(cost), s = parseFloat(shares);
+    if(isNaN(c)||c<=0||isNaN(s)||s<=0){ alert("请填正数"); return; }
+    list[idx].cost = c; list[idx].shares = s;
+  }
+  saveCustoms(list);
+  refreshCustomList();
 }
 
 /* ============ 事件 ============ */
