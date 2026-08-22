@@ -477,34 +477,54 @@ function getEtfQuote(secid){
    1) push2 实时行情（f58=中文简称），适合场内 ETF；场外基金尝试 0./1. 两个市场前缀。
    2) searchapi 搜索建议（type=14），返回 Name 字段，对场外基金尤其稳。
    任意一路成功即返回基金真实名称。 */
+/* 根据名称推断基金类型：ETF联接/LOF/QDII/混合/债券/股票型/货币基金 都是场外 fund；纯 ETF 是场内 etf */
+function inferKind(name){
+  if(!name) return null;
+  if(/联接|LOF|QDII|混合|债券|股票型|货币基金|理财宝|现金|指数增强/i.test(name)) return "fund";
+  if(/ETF/i.test(name)) return "etf";
+  return "fund";
+}
+function isStockName(name){
+  // 股基同号时，push2 可能把股票名当基金名返回；过滤明显股票特征
+  return /^\*?ST|退市|股份$|集团$|科技$|实业$|有限公司$|A股$/i.test(name || "");
+}
 function resolveFundName(code, market, kind){
+  function trySearch(){
+    const url = "https://searchapi.eastmoney.com/api/suggest/get?input=" + code + "&type=14&count=3";
+    return jsonpGet(url)
+      .then(d=>{
+        const data = d && d.QuotationCodeTable && d.QuotationCodeTable.Data ? d.QuotationCodeTable.Data : [];
+        if(!data.length) return null;
+        // 优先取基金/ETF结果，避免股基同号时第一条是股票
+        const fund = data.find(it => /^(OTCFUND|ETF|FUND)$/.test(it.Classify)) || data[0];
+        if(fund && fund.Name) return String(fund.Name).trim();
+        return null;
+      })
+      .catch(()=>null);
+  }
   function tryPush2(secid){
     const url = "https://push2.eastmoney.com/api/qt/stock/get?secid=" + secid + "&fields=f57,f58";
     return jsonpGet(url)
       .then(d=>{
         const q = d && d.data ? d.data : null;
-        if(q && q.f58) return String(q.f58).trim();
+        if(q && q.f58){
+          const name = String(q.f58).trim();
+          return isStockName(name) ? null : name;
+        }
         return null;
       })
       .catch(()=>null);
   }
-  function trySearch(){
-    const url = "https://searchapi.eastmoney.com/api/suggest/get?input=" + code + "&type=14&count=1";
-    return jsonpGet(url)
-      .then(d=>{
-        const data = d && d.QuotationCodeTable && d.QuotationCodeTable.Data ? d.QuotationCodeTable.Data : [];
-        if(data.length && data[0].Name) return String(data[0].Name).trim();
-        return null;
-      })
-      .catch(()=>null);
-  }
-  if(kind === "etf"){
-    const secid = (market === "sh" ? "1." : "0.") + code;
-    return tryPush2(secid).then(name => name || trySearch());
-  }
-  // 场外基金：push2 市场前缀不确定，0./1. 都试，再用 searchapi 兜底
-  return Promise.all([tryPush2("0."+code), tryPush2("1."+code)])
-    .then(names => names.find(n => n) || trySearch());
+  // 优先 searchapi（基金专用接口），避免股基同号被 push2 当股票
+  return trySearch().then(name => {
+    if(name) return name;
+    if(kind === "etf"){
+      const secid = (market === "sh" ? "1." : "0.") + code;
+      return tryPush2(secid);
+    }
+    return Promise.all([tryPush2("0."+code), tryPush2("1."+code)])
+      .then(names => names.find(n => n) || null);
+  });
 }
 /* ============ 指标计算 ============ */
 function calcMetrics(series){
@@ -1055,21 +1075,39 @@ function guessMarket(code){
   return "";
 }
 async function loadCustomFund(item){
-  const market = item.market || guessMarket(item.code);
-  const f = {code:item.code, name:item.name||item.code, kind:item.kind, market, mgr:"自选"};
-  const d = await loadFund(f);
-  // 名称解析：优先用 pingzhongdata 的全局缓存；若主通道失败/无名称，用 push2 实时行情兜底
+  // 名称解析：优先用 pingzhongdata 的全局缓存；没有则走 searchapi/push2 兜底
   let resolved = (window.__fundNames && window.__fundNames[item.code]) || null;
   if(!resolved){
-    resolved = await resolveFundName(item.code, market, item.kind);
+    resolved = await resolveFundName(item.code, item.market || guessMarket(item.code), item.kind);
     if(resolved && !window.__fundNames) window.__fundNames = {};
     if(resolved) window.__fundNames[item.code] = resolved;
   }
-  if(resolved && resolved !== item.name && resolved !== item.code){
-    d.name = resolved;
+
+  // 根据解析到的真实名称，自动纠正 kind/market（防止股基同号或用户类型选错，如 002207 被当 ETF）
+  let kind = item.kind;
+  let market = item.market || guessMarket(item.code);
+  if(resolved){
+    const inferred = inferKind(resolved);
+    if(inferred && inferred !== kind){
+      kind = inferred;
+      market = (kind === "etf" ? guessMarket(item.code) : "");
+    }
+  }
+
+  const f = {code:item.code, name:resolved||item.name||item.code, kind, market, mgr:"自选"};
+  const d = await loadFund(f);
+  d.name = resolved || d.name || item.name || item.code;
+
+  // 把纠正后的名称/类型写回 localStorage
+  if(resolved){
     const list = getCustoms();
-    const idx = list.findIndex(x=>x.code===item.code && x.kind===item.kind);
-    if(idx>=0){ list[idx].name = resolved; saveCustoms(list); }
+    const idx = list.findIndex(x=>x.code===item.code);
+    if(idx>=0){
+      list[idx].name = resolved;
+      list[idx].kind = kind;
+      list[idx].market = market;
+      saveCustoms(list);
+    }
   }
   return d;
 }
@@ -1110,22 +1148,33 @@ function renderCustom(){
 
   refreshCustomList();
 }
-function addCustom(){
+async function addCustom(){
   const code = $("#cusCode").value.trim();
   if(!/^\d{6}$/.test(code)){ alert("请输入6位基金代码"); return; }
   const type = $("#cusType").value;
   let kind="fund", market="";
   if(type==="etf-sh"){ kind="etf"; market="sh"; }
   else if(type==="etf-sz"){ kind="etf"; market="sz"; }
+
+  // 添加前先解析真实名称并自动纠正类型（防止股基同号或类型选错，如 002207 实际是场外基金）
+  const resolved = await resolveFundName(code, market, kind).catch(()=>null);
+  if(resolved){
+    const inferred = inferKind(resolved);
+    if(inferred && inferred !== kind){
+      kind = inferred;
+      market = (kind === "etf" ? guessMarket(code) : "");
+    }
+  }
+
   const list = getCustoms();
-  if(list.some(x=>x.code===code && x.kind===kind)){ alert("该基金已在自选列表"); return; }
-  list.push({code, kind, market, name:code});
+  if(list.some(x=>x.code===code)){ alert("该基金已在自选列表"); return; }
+  list.push({code, kind, market, name:resolved||code});
   saveCustoms(list);
   $("#cusCode").value = "";
   refreshCustomList();
 }
-function removeCustom(code, kind){
-  let list = getCustoms().filter(x=>!(x.code===code && x.kind===kind));
+function removeCustom(code){
+  let list = getCustoms().filter(x=>x.code!==code);
   saveCustoms(list);
   refreshCustomList();
 }
@@ -1149,8 +1198,8 @@ async function refreshCustomList(){
     const el = cardEl(d);
     // 给标题加删除按钮
     const top = el.querySelector(".fc-top div:first-child");
-    top.innerHTML += '<span class="del-btn" data-code="'+d.code+'" data-kind="'+d.kind+'">删除</span>';
-    el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code, e.target.dataset.kind); };
+    top.innerHTML += '<span class="del-btn" data-code="'+d.code+'">删除</span>';
+    el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
     holder.appendChild(el);
   });
 
