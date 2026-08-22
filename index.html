@@ -146,6 +146,31 @@
   .compare-table .fund-code { font-size:10px; color:var(--sub); }
   .compare-wrap { overflow-x:auto; padding-bottom:10px; }
   .del-btn { font-size:11px; color:#ef4444; margin-left:8px; cursor:pointer; }
+  /* ============ 消息面/情绪面 ============ */
+  .sent { background:linear-gradient(135deg,#eef2ff,#f5f3ff); border:1px solid #c7d2fe; border-radius:12px; padding:11px 13px; margin:0 12px 10px; }
+  .ov-sent { margin:0 0 10px; }
+  .sent-head { font-size:13px; font-weight:800; color:#4338ca; margin-bottom:8px; }
+  .thermo { margin-bottom:8px; }
+  .th-track { position:relative; height:12px; border-radius:7px; background:linear-gradient(90deg,#16a34a 0%,#eab308 45%,#dc2626 80%,#991b1b 100%); overflow:hidden; opacity:.32; }
+  .th-fill { position:absolute; top:0; left:0; height:100%; background:rgba(255,255,255,.0); }
+  .th-mark { position:absolute; top:-3px; width:3px; height:18px; background:#1e293b; border-radius:2px; transform:translateX(-50%); }
+  .th-meta { display:flex; justify-content:space-between; align-items:baseline; margin-top:5px; }
+  .th-score { font-size:15px; font-weight:800; color:#1e293b; }
+  .th-label { font-size:12px; font-weight:700; padding:1px 9px; border-radius:6px; }
+  .th-label.neutral { background:#e2e8f0; color:#475569; }
+  .th-label.greed { background:#dcfce7; color:#15803d; }
+  .th-label.greed-ex { background:#16a34a; color:#fff; }
+  .th-label.fear { background:#fee2e2; color:#b91c1c; }
+  .th-label.fear-ex { background:#dc2626; color:#fff; }
+  .sent-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:3px 0; border-top:1px dashed #e0e7ff; }
+  .sent-row .sk { color:#6b7280; }
+  .sent-row b { font-weight:700; color:#1e293b; }
+  .sent-row b.in { color:#d92b2b; }
+  .sent-row b.out { color:#13a05a; }
+  .sent-row b.muted { color:#9aa0aa; font-weight:600; }
+  .sent-row b.north { color:#4338ca; }
+  .sent-row .sub { font-size:10px; color:#9aa0aa; margin-left:6px; }
+  .sent-note { font-size:11px; color:#6b7280; line-height:1.6; margin-top:6px; background:#fafaff; border-radius:8px; padding:7px 9px; }
 </style>
 </head>
 <body>
@@ -191,7 +216,7 @@
 /* v6：每个板块改为「候选池 pool[]」——打开时实时拉全部候选净值、按近1年/近3年/回撤综合排序，取当前最强 Top3。
    boss 卡为「板块代表经理/指数说明」（写死，作为科普锚点）；Top3 名单随行情实时变化。 */
 const SECTORS = [
-  { name:"半导体/芯片", boss:{name:"郑巍山", fund:"银河创新成长A(519674)", style:"主动·成长集中", ret:"任职回报≈427%~455%", note:"近3年夏普1.17；风格极致集中、弹性高但回撤深。板块内 ETF 联接被动跟踪国证/中证半导体指数，主动基看郑巍山、刘慧影(诺安)等。"}, pool:[
+  { name:"半导体/芯片", bk:["BK1325","BK1127"], boss:{name:"郑巍山", fund:"银河创新成长A(519674)", style:"主动·成长集中", ret:"任职回报≈427%~455%", note:"近3年夏普1.17；风格极致集中、弹性高但回撤深。板块内 ETF 联接被动跟踪国证/中证半导体指数，主动基看郑巍山、刘慧影(诺安)等。"}, pool:[
     {code:"007300", name:"国联安中证半导体ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"320007", name:"诺安成长混合A", kind:"fund", mgr:"刘慧影"},
     {code:"519674", name:"银河创新成长混合A", kind:"fund", mgr:"郑巍山"},
@@ -204,7 +229,7 @@ const SECTORS = [
     {code:"008888", name:"华夏国证半导体芯片ETF联接C", kind:"fund", mgr:"指数团队"},
     {code:"017811", name:"东方人工智能主题混合C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"有色金属(贵金属)", boss:{name:"吴国清", fund:"前海开源金银珠宝(002207)", style:"黄金/有色主动", ret:"任职回报约130%", note:"以金银、有色资源股为主，弹性随金价与工业金属周期；板块内也有黄金/白银/有色期货 ETF 联接可分散配置。"}, pool:[
+  { name:"有色金属(贵金属)", bk:["BK1288","BK1624","BK0438"], boss:{name:"吴国清", fund:"前海开源金银珠宝(002207)", style:"黄金/有色主动", ret:"任职回报约130%", note:"以金银、有色资源股为主，弹性随金价与工业金属周期；板块内也有黄金/白银/有色期货 ETF 联接可分散配置。"}, pool:[
     {code:"004432", name:"南方有色金属ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"000216", name:"华安黄金ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"161226", name:"国投瑞银白银期货(LOF)A", kind:"fund", mgr:"主动·白银"},
@@ -213,7 +238,7 @@ const SECTORS = [
     {code:"014111", name:"嘉实中证稀有金属主题ETF发起联接C", kind:"fund", mgr:"指数团队"},
     {code:"004253", name:"国泰黄金ETF联接C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"电网设备", boss:{index:true, name:"指数被动", fund:"跟踪中证电网设备主题指数", style:"特高压/智能电网设备", ret:"—", note:"电网设备多为指数 ETF 联接，被动跟踪中证电网设备主题指数（特高压+智能电网设备），无单一经理；选规模大、费率低者。"}, pool:[
+  { name:"电网设备", bk:["BK0427","BK1024"], boss:{index:true, name:"指数被动", fund:"跟踪中证电网设备主题指数", style:"特高压/智能电网设备", ret:"—", note:"电网设备多为指数 ETF 联接，被动跟踪中证电网设备主题指数（特高压+智能电网设备），无单一经理；选规模大、费率低者。"}, pool:[
     {code:"023638", name:"国泰A股电网设备ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"025832", name:"天弘电网设备特高压指数A", kind:"fund", mgr:"指数团队"},
     {code:"012831", name:"南方中证新能源ETF联接A", kind:"fund", mgr:"指数团队"},
@@ -223,7 +248,7 @@ const SECTORS = [
     {code:"020425", name:"方正富邦致盛混合C", kind:"fund", mgr:"指数团队"},
     {code:"011172", name:"广发利鑫灵活配置混合C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"电力", boss:{index:true, name:"指数被动", fund:"跟踪电力/绿电指数", style:"公用事业·防御", ret:"—", note:"电力多为指数 ETF 联接，防御属性较强，适合作为组合稳定器；含传统电力与绿电。"}, pool:[
+  { name:"电力", bk:["BK0428","BK1024"], boss:{index:true, name:"指数被动", fund:"跟踪电力/绿电指数", style:"公用事业·防御", ret:"—", note:"电力多为指数 ETF 联接，防御属性较强，适合作为组合稳定器；含传统电力与绿电。"}, pool:[
     {code:"016185", name:"广发电力ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"019058", name:"易方达绿色电力ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"021752", name:"南方电力ETF联接A", kind:"fund", mgr:"指数团队"},
@@ -232,7 +257,7 @@ const SECTORS = [
     {code:"019059", name:"易方达绿色电力ETF联接C", kind:"fund", mgr:"指数团队"},
     {code:"019593", name:"嘉实中证国新央企现代能源ETF联接C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"科技AI/全球科技", boss:{name:"郑希", fund:"易方达信息产业A(001513)", style:"科技成长", ret:"任职回报约284%", note:"现任'公募一哥'(在管约579亿)，'景气周期拼接'框架，聚焦AI算力+半导体设备。板块同时含 A 股 AI/云计算 ETF 联接与全球科技 QDII(纳指/标普/印度/港股科技)。"}, pool:[
+  { name:"科技AI/全球科技", bk:["BK0800","BK0579","BK1127"], boss:{name:"郑希", fund:"易方达信息产业A(001513)", style:"科技成长", ret:"任职回报约284%", note:"现任'公募一哥'(在管约579亿)，'景气周期拼接'框架，聚焦AI算力+半导体设备。板块同时含 A 股 AI/云计算 ETF 联接与全球科技 QDII(纳指/标普/印度/港股科技)。"}, pool:[
     {code:"008585", name:"华夏人工智能ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"017853", name:"易方达云计算ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"000834", name:"大成纳斯达克100ETF联接(QDII)A", kind:"fund", mgr:"指数团队"},
@@ -243,7 +268,7 @@ const SECTORS = [
     {code:"016665", name:"天弘全球高端制造混合(QDII)C", kind:"fund", mgr:"指数团队"},
     {code:"118001", name:"易方达亚洲精选股票", kind:"fund", mgr:"主动·全球"}
   ]},
-  { name:"红利", boss:{index:true, name:"指数被动", fund:"跟踪红利类指数", style:"高股息一篮子", ret:"—", note:"红利多为指数 ETF 联接，分散持有一篮子高股息股，无单一经理；含 A 股红利、红利低波。"}, pool:[
+  { name:"红利", bk:["BK1641"], boss:{index:true, name:"指数被动", fund:"跟踪红利类指数", style:"高股息一篮子", ret:"—", note:"红利多为指数 ETF 联接，分散持有一篮子高股息股，无单一经理；含 A 股红利、红利低波。"}, pool:[
     {code:"161907", name:"万家中证红利ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"009051", name:"易方达中证红利ETF联接发起式A", kind:"fund", mgr:"指数团队"},
     {code:"012643", name:"招商中证红利ETF联接A", kind:"fund", mgr:"指数团队"},
@@ -252,7 +277,7 @@ const SECTORS = [
     {code:"004815", name:"中欧红利优享混合C", kind:"fund", mgr:"指数团队"},
     {code:"022496", name:"嘉实红利精选混合发起式C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"军工/航天", boss:{name:"何崇恺", fund:"易方达国防军工A(001475)", style:"军工信息化/军贸", ret:"任期4年+22.56%", note:"年化回报约22%，聚焦军工新逻辑(信息化/军贸/民机)；航天(卫星/火箭/商业航天)为军工子领域，一并纳入。"}, pool:[
+  { name:"军工/航天", bk:["BK1207","BK0963","BK1233"], boss:{name:"何崇恺", fund:"易方达国防军工A(001475)", style:"军工信息化/军贸", ret:"任期4年+22.56%", note:"年化回报约22%，聚焦军工新逻辑(信息化/军贸/民机)；航天(卫星/火箭/商业航天)为军工子领域，一并纳入。"}, pool:[
     {code:"003017", name:"广发中证军工ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"001475", name:"易方达国防军工混合A", kind:"fund", mgr:"何崇恺"},
     {code:"002983", name:"长信国防军工量化混合A", kind:"fund", mgr:"左金保"},
@@ -267,7 +292,7 @@ const SECTORS = [
     {code:"007046", name:"方正富邦创新动力混合C", kind:"fund", mgr:"指数团队"},
     {code:"025491", name:"平安中证卫星产业指数C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"医药", boss:{name:"葛兰", fund:"中欧医疗健康A(003095)", style:"创新药/CXO成长", ret:"任职回报约123%~215%", note:"医药主题代表经理，规模314亿；赵蓓(工银前沿医疗)波动控制更优，二者并称医药双姝。"}, pool:[
+  { name:"医药", bk:["BK1216"], boss:{name:"葛兰", fund:"中欧医疗健康A(003095)", style:"创新药/CXO成长", ret:"任职回报约123%~215%", note:"医药主题代表经理，规模314亿；赵蓓(工银前沿医疗)波动控制更优，二者并称医药双姝。"}, pool:[
     {code:"001344", name:"易方达医药ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"006756", name:"国泰中证生物医药ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"003095", name:"中欧医疗健康混合A", kind:"fund", mgr:"葛兰"},
@@ -280,7 +305,7 @@ const SECTORS = [
     {code:"008284", name:"易方达全球医药行业混合发起式(QDII)A(人民币)", kind:"fund", mgr:"主动·均衡"},
     {code:"017480", name:"广发医药精选股票C", kind:"fund", mgr:"主动·医药"}
   ]},
-  { name:"新能源", boss:{name:"崔宸龙", fund:"前海开源新经济A(000689)", style:"新能源+公用事业", ret:"任职回报约130%", note:"材料学博士，成长弹性大；华夏能源革新现由杨宇接任。板块含新能源车/新能源/电池 ETF 联接与主动基。"}, pool:[
+  { name:"新能源", bk:["BK1032","BK0427"], boss:{name:"崔宸龙", fund:"前海开源新经济A(000689)", style:"新能源+公用事业", ret:"任职回报约130%", note:"材料学博士，成长弹性大；华夏能源革新现由杨宇接任。板块含新能源车/新能源/电池 ETF 联接与主动基。"}, pool:[
     {code:"012831", name:"南方中证新能源ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"015873", name:"工银锂电池ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"161028", name:"富国中证新能源汽车指数(LOF)A", kind:"fund", mgr:"指数团队"},
@@ -290,14 +315,14 @@ const SECTORS = [
     {code:"014766", name:"中欧碳中和混合发起C", kind:"fund", mgr:"主动·新能源"},
     {code:"025395", name:"圆信永丰高端制造C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"锂矿", boss:{index:true, name:"指数被动", fund:"跟踪稀有金属/矿业指数", style:"锂电上游资源", ret:"—", note:"锂矿多为稀有金属/矿业 ETF 联接，被动跟踪含锂量高的资源指数（盐湖股份、赣锋锂业、天齐锂业等），无单一经理。"}, pool:[
+  { name:"锂矿", bk:["BK1304","BK1624","BK1288"], boss:{index:true, name:"指数被动", fund:"跟踪稀有金属/矿业指数", style:"锂电上游资源", ret:"—", note:"锂矿多为稀有金属/矿业 ETF 联接，被动跟踪含锂量高的资源指数（盐湖股份、赣锋锂业、天齐锂业等），无单一经理。"}, pool:[
     {code:"019874", name:"广发稀有金属ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"004432", name:"南方有色金属ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"290008", name:"泰信发展主题混合", kind:"fund", mgr:"主动·资源"},
     {code:"012710", name:"华夏核心成长混合C", kind:"fund", mgr:"指数团队"},
     {code:"022447", name:"前海开源周期精选混合C", kind:"fund", mgr:"主动·资源"}
   ]},
-  { name:"恒生科技", boss:{index:true, name:"指数被动", fund:"跟踪恒生科技指数", style:"港股科技龙头", ret:"—", note:"恒生科技多为指数 ETF 联接，含腾讯/阿里/美团/小米等港股科技龙头，无单一经理；受美债利率与南向资金影响大。"}, pool:[
+  { name:"恒生科技", bk:["HK"], boss:{index:true, name:"指数被动", fund:"跟踪恒生科技指数", style:"港股科技龙头", ret:"—", note:"恒生科技多为指数 ETF 联接，含腾讯/阿里/美团/小米等港股科技龙头，无单一经理；受美债利率与南向资金影响大。"}, pool:[
     {code:"012348", name:"天弘恒生科技ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"012804", name:"广发恒生科技ETF联接(QDII)A", kind:"fund", mgr:"指数团队"},
     {code:"013127", name:"汇添富恒生科技ETF联接发起式(QDII)A", kind:"fund", mgr:"指数团队"},
@@ -305,7 +330,7 @@ const SECTORS = [
     {code:"012980", name:"大成恒生科技ETF发起式联接C", kind:"fund", mgr:"指数团队"},
     {code:"015311", name:"华泰柏瑞恒生科技ETF联接(QDII)C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"光伏", boss:{index:true, name:"指数被动", fund:"跟踪光伏产业指数", style:"新能源细分", ret:"—", note:"光伏多为指数 ETF 联接，被动跟踪；行业周期波动大，注意估值位置。"}, pool:[
+  { name:"光伏", bk:["BK1317","BK1316"], boss:{index:true, name:"指数被动", fund:"跟踪光伏产业指数", style:"新能源细分", ret:"—", note:"光伏多为指数 ETF 联接，被动跟踪；行业周期波动大，注意估值位置。"}, pool:[
     {code:"012679", name:"华泰柏瑞光伏ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"011102", name:"天弘中证光伏产业指数A", kind:"fund", mgr:"指数团队"},
     {code:"012364", name:"广发中证光伏产业指数A", kind:"fund", mgr:"指数团队"},
@@ -315,7 +340,7 @@ const SECTORS = [
     {code:"014605", name:"嘉实中证光伏产业ETF发起联接C", kind:"fund", mgr:"指数团队"},
     {code:"019532", name:"南方中证光伏产业指数发起C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"白酒消费", boss:{name:"萧楠", fund:"易方达消费行业(110022)", style:"大盘成长", ret:"任职13年+256%", note:"5座金牛奖，长跑稳健；侯昊管的招商白酒为指数型，被动跟踪中证白酒。"}, pool:[
+  { name:"白酒消费", bk:["BK0896","BK0438"], boss:{name:"萧楠", fund:"易方达消费行业(110022)", style:"大盘成长", ret:"任职13年+256%", note:"5座金牛奖，长跑稳健；侯昊管的招商白酒为指数型，被动跟踪中证白酒。"}, pool:[
     {code:"161725", name:"招商中证白酒指数(LOF)A", kind:"fund", mgr:"指数团队"},
     {code:"160632", name:"鹏华酒A", kind:"fund", mgr:"指数团队"},
     {code:"000248", name:"汇添富中证主要消费ETF联接A", kind:"fund", mgr:"指数团队"},
@@ -323,7 +348,7 @@ const SECTORS = [
     {code:"016550", name:"永赢消费龙头智选混合发起C", kind:"fund", mgr:"指数团队"},
     {code:"011309", name:"富国消费主题混合C", kind:"fund", mgr:"主动·消费"}
   ]},
-  { name:"粮食", boss:{index:true, name:"指数被动", fund:"跟踪农业/粮食指数", style:"农粮分散", ret:"—", note:"农业多为指数增强基金，受粮价与政策影响；含农业、养殖、粮食细分，无单一最佳经理，选规模大者。"}, pool:[
+  { name:"粮食", bk:["BK0433","BK0888"], boss:{index:true, name:"指数被动", fund:"跟踪农业/粮食指数", style:"农粮分散", ret:"—", note:"农业多为指数增强基金，受粮价与政策影响；含农业、养殖、粮食细分，无单一最佳经理，选规模大者。"}, pool:[
     {code:"001027", name:"前海开源中证大农业指数增强A", kind:"fund", mgr:"指数团队"},
     {code:"010769", name:"天弘中证农业主题ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"020650", name:"博时国证粮食产业ETF发起式联接A", kind:"fund", mgr:"指数团队"},
@@ -331,7 +356,7 @@ const SECTORS = [
     {code:"012724", name:"国泰中证畜牧养殖ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"001195", name:"工银农业产业股票", kind:"fund", mgr:"主动·农业"}
   ]},
-  { name:"高波固收", boss:{index:true, name:"指数被动", fund:"可转债基金", style:"高波动债券", ret:"—", note:"高波固收以可转债基金为代表，波动显著高于普通债基（兼具债底与股性），适合作为组合中的弹性防守仓；非纯债，仍含权益波动。"}, pool:[
+  { name:"高波固收", bk:["BOND"], boss:{index:true, name:"指数被动", fund:"可转债基金", style:"高波动债券", ret:"—", note:"高波固收以可转债基金为代表，波动显著高于普通债基（兼具债底与股性），适合作为组合中的弹性防守仓；非纯债，仍含权益波动。"}, pool:[
     {code:"470058", name:"汇添富可转换债券A", kind:"fund", mgr:"指数团队"},
     {code:"019540", name:"富国可转换债券E", kind:"fund", mgr:"指数团队"},
     {code:"001045", name:"华夏可转债增强债券A", kind:"fund", mgr:"指数团队"},
@@ -341,7 +366,7 @@ const SECTORS = [
     {code:"163806", name:"中银增利债券A", kind:"fund", mgr:"指数团队"},
     {code:"675113", name:"西部利得汇享债券C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"沪深300", boss:{index:true, name:"指数被动", fund:"跟踪沪深300", style:"宽基大盘", ret:"—", note:"沪深300宽基指数无单一经理，选规模大、费率低者；适合作为组合底仓与业绩基准对照。"}, pool:[
+  { name:"沪深300", bk:["BK0701"], boss:{index:true, name:"指数被动", fund:"跟踪沪深300", style:"宽基大盘", ret:"—", note:"沪深300宽基指数无单一经理，选规模大、费率低者；适合作为组合底仓与业绩基准对照。"}, pool:[
     {code:"000051", name:"华夏沪深300ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"000961", name:"天弘沪深300ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"005102", name:"工银沪深300ETF联接A", kind:"fund", mgr:"指数团队"},
@@ -349,7 +374,7 @@ const SECTORS = [
     {code:"673101", name:"西部利得沪深300指数增强C", kind:"fund", mgr:"指数团队"},
     {code:"012912", name:"同泰沪深300量化增强C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"煤炭", boss:{index:true, name:"指数被动", fund:"跟踪中证煤炭指数", style:"能源·周期", ret:"—", note:"煤炭多为指数 ETF 联接，强周期、高股息，与商品价格高度相关；无单一经理。"}, pool:[
+  { name:"煤炭", bk:["BK0437","BK1250"], boss:{index:true, name:"指数被动", fund:"跟踪中证煤炭指数", style:"能源·周期", ret:"—", note:"煤炭多为指数 ETF 联接，强周期、高股息，与商品价格高度相关；无单一经理。"}, pool:[
     {code:"161032", name:"富国中证煤炭指数(LOF)A", kind:"fund", mgr:"指数团队"},
     {code:"008279", name:"国泰中证煤炭ETF联接A", kind:"fund", mgr:"指数团队"},
     {code:"013275", name:"富国中证煤炭指数(LOF)C", kind:"fund", mgr:"指数团队"},
@@ -361,6 +386,29 @@ const SECTORS = [
 
 const FAV_KEY = "fund_selector_favs_v1";
 let current = SECTORS[0];
+/* 情绪面全局缓存：广度、北向、各板块资金，避免重复请求 */
+let _sentCache = { breadth:null, north:null, sector:{}, ts:0 };
+async function loadSentiment(sec){
+  // 广度 + 北向只拉一次（缓存 5 分钟）
+  const now = Date.now();
+  if(now - _sentCache.ts > 300000){
+    const [b, n] = await Promise.all([getMarketBreadth().catch(()=>null), getNorthFlow().catch(()=>null)]);
+    _sentCache.breadth = b; _sentCache.north = n; _sentCache.ts = now;
+  }
+  // 板块资金
+  let flow = _sentCache.sector[sec.name];
+  if(!flow){
+    flow = await getSectorFlow(sec.bk).catch(()=>null);
+    _sentCache.sector[sec.name] = flow;
+  }
+  const si = sentimentIndex({
+    sectorNet: flow ? flow.net : null,
+    marketLimitUp: _sentCache.breadth ? _sentCache.breadth.limitUp : null,
+    northNet: _sentCache.north ? (_sentCache.north.south + _sentCache.north.north) : null
+  });
+  return { flow, si, north:_sentCache.north, breadth:_sentCache.breadth };
+}
+
 
 /* ============ 工具函数 ============ */
 function $(s){ return document.querySelector(s); }
@@ -569,6 +617,134 @@ function inferKind(name){
 function isStockName(name){
   // 股基同号时，push2 可能把股票名当基金名返回；过滤明显股票特征
   return /^\*?ST|退市|股份$|集团$|科技$|实业$|有限公司$|A股$/i.test(name || "");
+}
+
+/* ============ 消息面 / 情绪面数据源 ============
+   思路：纯前端只能用东方财富的公开板块资金接口（行业/概念板块 BK 代码）
+   与沪深港通资金接口。新闻正文/研报需要付费源，做不到，故提供"贴链接标注"
+   的轻量入口在界面层（见 sentimentBox 区域）。
+   恐贪指数 = 板块主力资金净额方向 + 全市场广度（涨跌停比）+ 北向资金，合成 0~100。
+
+   实现要点：东方财富对单只板块代码(push2 stock/get secid=90.BKxxxx)在部分网络环境
+   返回空，但 clist 的"行业/概念全量列表"接口(fs=m:90+t:2 / t:3)能稳定返回每只板块的
+   f62 主力净额。故改为：启动时预拉两份全量列表，本地建 {BK:资金} 索引，前端直接查
+   缓存，零逐只请求、避免因单查限流导致数据缺失。 */
+
+/* 板块资金快照：{ "BK0437": {net, netPct, pct, name}, ... } */
+let _bkSnap = null;
+async function loadBkSnapshot(){
+  if(_bkSnap) return _bkSnap;
+  _bkSnap = {};
+  const fsList = ["m:90+t:2", "m:90+t:3"]; // 行业 + 概念
+  await Promise.all(fsList.map(async (fs)=>{
+    try{
+      const url = "https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&fid=f62&fs=" + fs +
+        "&fields=f12,f14,f62,f184,f3";
+      const d = await jsonpGet(url);
+      const arr = d && d.data && d.data.diff ? (Array.isArray(d.data.diff)?d.data.diff:Object.values(d.data.diff)) : [];
+      arr.forEach(it=>{
+        if(it.f12 && it.f12.indexOf("BK")===0){
+          _bkSnap[it.f12] = {
+            net: it.f62 != null ? it.f62 : 0,
+            netPct: (it.f184||0)/1000,
+            pct: it.f3 != null ? it.f3/100 : 0,
+            name: it.f14 || it.f12
+          };
+        }
+      });
+    }catch(e){ /* 单个分类失败不影响另一个 */ }
+  }));
+  return _bkSnap;
+}
+/* 板块情绪：合并多个 BK 代码（取主力净额合计 + 加权平均涨跌） */
+async function getSectorFlow(bks){
+  if(!bks || !bks.length) return null;
+  if(bks[0] === "HK"){
+    // 港股/恒生科技：改用沪深港通南向资金近似
+    const nf = await getNorthFlow();
+    if(!nf) return null;
+    return { hk:true, net:nf.south, netPct:0, pct:0, name:"港股通(南向)", parts:[] };
+  }
+  if(bks[0] === "BOND"){
+    // 可转债/债基：无板块资金，返回 null，界面显示"债基看股债性价比"
+    return null;
+  }
+  const snap = await loadBkSnapshot();
+  const valid = bks.map(b=>snap[b]).filter(x=>x);
+  if(!valid.length) return null;
+  let net = 0, wsum = 0, pctW = 0;
+  valid.forEach(v=>{ net += v.net; const w = Math.abs(v.net)||1; wsum += w; pctW += v.pct*w; });
+  return {
+    code: bks[0], name: valid[0].name,
+    net, netPct: valid.reduce((s,v)=>s+v.netPct,0)/valid.length,
+    pct: pctW/wsum,
+    parts: valid
+  };
+}
+
+/* 全市场广度：涨停 / 跌停家数（用 clist 统计涨停总数近似） */
+function getMarketBreadth(){
+  const url = "https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&fid=f3&fs=m:0+t:81+s:2048,m:1+t:81+s:2048&fields=f12,f14,f3";
+  return jsonpGet(url).then(d=>{
+    const t = d && d.data && d.data.total;
+    if(t == null) return null;
+    return { limitUp: t }; // 涨停家数（含京市，近似）
+  }).catch(()=>null);
+}
+
+/* 沪深港通资金：dayNetAmtIn 当日净流入（亿元） */
+function getNorthFlow(){
+  const url = "https://push2.eastmoney.com/api/qt/kamt/get?fields1=f1,f2,f3,f4&fields2=f51,f52,f53,f54,f55,f56,f57,f58";
+  return jsonpGet(url).then(d=>{
+    const dt = d && d.data;
+    if(!dt) return null;
+    // hk2sh = 港股通(沪)净买额；sh2hk 反向；取当日南向合计
+    const south = (dt.hk2sh && dt.hk2sh.dayNetAmtIn||0) + (dt.hk2sz && dt.hk2sz.dayNetAmtIn||0);
+    const north = (dt.sh2hk && dt.sh2hk.dayNetAmtIn||0) + (dt.sz2hk && dt.sz2hk.dayNetAmtIn||0);
+    return { south: south*1e8, north: north*1e8, date: (dt.hk2sh&&dt.hk2sh.date2)||"" };
+  }).catch(()=>null);
+}
+
+/* 恐贪指数合成：0~100，越高越贪婪（偏买）；越低越恐惧（偏卖）
+   输入：sectorNet(板块主力净额,元)、marketLimitUp(涨停家数)、northNet(北向净额,元)
+   权重：板块资金 50% + 市场广度 30% + 北向 20% */
+function sentimentIndex(opts){
+  const {sectorNet, marketLimitUp, northNet} = opts;
+  // 板块资金：以 ±50亿为满格
+  let s1 = 50;
+  if(sectorNet != null){
+    const v = Math.max(-50e8, Math.min(50e8, sectorNet)) / 50e8; // -1~1
+    s1 = 50 + v*25; // 25~75
+  } else s1 = 50;
+  // 市场广度：涨停家数 0~150 映射 0~100，中位 ~40家=50分
+  let s2 = 50;
+  if(marketLimitUp != null){
+    const v = Math.max(0, Math.min(150, marketLimitUp)) / 150;
+    s2 = 20 + v*60; // 20~80
+  }
+  // 北向：±100亿满格
+  let s3 = 50;
+  if(northNet != null){
+    const v = Math.max(-100e8, Math.min(100e8, northNet)) / 100e8;
+    s3 = 50 + v*25;
+  }
+  const score = Math.round(s1*0.5 + s2*0.3 + s3*0.2);
+  let label, cls;
+  if(score >= 80){ label="极度贪婪"; cls="greed-ex"; }
+  else if(score >= 60){ label="贪婪"; cls="greed"; }
+  else if(score >= 45){ label="中性"; cls="neutral"; }
+  else if(score >= 25){ label="恐惧"; cls="fear"; }
+  else { label="极度恐惧"; cls="fear-ex"; }
+  return { score, label, cls };
+}
+
+/* 板块主力资金中文解读 */
+function flowText(flow){
+  if(!flow) return null;
+  const yi = flow.net / 1e8;
+  const sign = yi >= 0 ? "主力净流入" : "主力净流出";
+  const cls = yi >= 0 ? "in" : "out";
+  return { txt: sign + " " + Math.abs(yi).toFixed(2) + " 亿", cls, pct: flow.netPct };
 }
 function resolveFundName(code, market, kind){
   function trySearch(){
@@ -973,6 +1149,51 @@ function bossEl(sec){
   return el;
 }
 
+/* ============ 消息面/情绪面渲染块 ============ */
+function sentimentEl(sec, sent){
+  const el = document.createElement("div");
+  el.className = "sent";
+  const ft = flowText(sent.flow);
+  const si = sent.si;
+  // 北向资金
+  let northTxt = "—";
+  if(sent.north){
+    const total = (sent.north.south + sent.north.north)/1e8;
+    const sign = total>=0 ? "净流入" : "净流出";
+    northTxt = sign + " " + Math.abs(total).toFixed(1) + " 亿" + (sent.north.date?("("+sent.north.date+")"):"");
+  }
+  // 广度
+  let brTxt = "—";
+  if(sent.breadth && sent.breadth.limitUp!=null) brTxt = "涨停 " + sent.breadth.limitUp + " 家";
+  // 资金行
+  let flowRow = '<div class="sent-row"><span class="sk">板块主力资金</span>';
+  if(ft){
+    flowRow += '<b class="'+ft.cls+'">'+ft.txt+'</b>';
+    if(ft.pct) flowRow += '<span class="sub">占比 '+(ft.pct*100).toFixed(2)+'%</span>';
+  } else if(sec.bk && sec.bk[0]==="BOND"){
+    flowRow += '<b class="muted">债基·看股债性价比</b>';
+  } else if(sec.bk && sec.bk[0]==="HK"){
+    flowRow += '<b class="muted">港股通情绪</b>';
+  } else {
+    flowRow += '<b class="muted">—</b>';
+  }
+  flowRow += '</div>';
+
+  // 恐贪温度计
+  const thermo = '<div class="thermo"><div class="th-track"><div class="th-fill th-'+si.cls+'" style="width:'+si.score+'%"></div>'+
+    '<div class="th-mark" style="left:'+si.score+'%"></div></div>'+
+    '<div class="th-meta"><span class="th-score">恐贪 '+si.score+'</span><span class="th-label '+si.cls+'">'+si.label+'</span></div></div>';
+
+  el.innerHTML =
+    '<div class="sent-head">📡 消息面 / 情绪面 · 实时</div>' +
+    thermo +
+    flowRow +
+    '<div class="sent-row"><span class="sk">沪深港通</span><b class="north">'+northTxt+'</b></div>' +
+    '<div class="sent-row"><span class="sk">市场广度</span><b>'+brTxt+'</b></div>' +
+    '<div class="sent-note">💡 资金/广度/北向为公开的实时情绪指标；新闻事件需你自行判断——利好政策/业绩超预期通常催化上涨，利空（减持/监管）反之。本区不作具体新闻抓取。</div>';
+  return el;
+}
+
 /* ============ 板块切换 ============ */
 function renderTabs(){
   const box = $("#tabs"); box.innerHTML = "";
@@ -995,6 +1216,9 @@ function renderCards(){
   (async()=>{
     box.innerHTML = "";
     if(current.boss) box.appendChild(bossEl(current));
+    // 情绪面模块：板块资金 + 恐贪指数
+    const sent = await loadSentiment(current).catch(()=>null);
+    if(sent) box.appendChild(sentimentEl(current, sent));
     const top = await rankPool(current);
     if(!top.length){
       box.innerHTML = '<div class="disc"><b>数据接口暂不可用</b>：候选池基金都未能获取数据，请稍后点"↻ 刷新"重试（可能接口限流或非交易时段）。</div>';
@@ -1055,6 +1279,31 @@ async function renderOverview(){
   ov.appendChild(bar);
   const cont = document.createElement("div");
   ov.appendChild(cont);
+  // 全市场情绪温度计（顶部）
+  const sentTop = document.createElement("div");
+  sentTop.id = "ovSent";
+  sentTop.className = "sent ov-sent";
+  cont.appendChild(sentTop);
+  // 异步拉全市场情绪填充
+  (async()=>{
+    try{
+      const b = await getMarketBreadth().catch(()=>null);
+      const n = await getNorthFlow().catch(()=>null);
+      const si = sentimentIndex({
+        sectorNet: null,
+        marketLimitUp: b ? b.limitUp : null,
+        northNet: n ? (n.south + n.north) : null
+      });
+      let northTxt = "—";
+      if(n){ const t=(n.south+n.north)/1e8; northTxt=(t>=0?"净流入":"净流出")+" "+Math.abs(t).toFixed(1)+" 亿"; }
+      let brTxt = b&&b.limitUp!=null ? "涨停 "+b.limitUp+" 家" : "—";
+      sentTop.innerHTML = '<div class="sent-head">📡 全市场情绪 · 恐贪指数</div>' +
+        '<div class="thermo"><div class="th-track"><div class="th-fill th-'+si.cls+'" style="width:'+si.score+'%"></div><div class="th-mark" style="left:'+si.score+'%"></div></div>'+
+        '<div class="th-meta"><span class="th-score">恐贪 '+si.score+'</span><span class="th-label '+si.cls+'">'+si.label+'</span></div></div>' +
+        '<div class="sent-row"><span class="sk">沪深港通</span><b class="north">'+northTxt+'</b></div>' +
+        '<div class="sent-row"><span class="sk">市场广度</span><b>'+brTxt+'</b></div>';
+    }catch(e){ sentTop.innerHTML = '<div class="sent-head">📡 全市场情绪（数据暂缺）</div>'; }
+  })();
   cont.innerHTML = '<div class="loading">正在加载 12 个板块的实时研判…（约需十几秒，请稍候）</div>';
 
   async function build(filterOnly){
