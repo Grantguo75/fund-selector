@@ -191,104 +191,89 @@
 /* v6：每个板块改为「候选池 pool[]」——打开时实时拉全部候选净值、按近1年/近3年/回撤综合排序，取当前最强 Top3。
    boss 卡为「板块代表经理/指数说明」（写死，作为科普锚点）；Top3 名单随行情实时变化。 */
 const SECTORS = [
-  { name:"半导体/芯片", boss:{name:"郑巍山", fund:"银河创新成长A(519674)", style:"主动·成长集中", ret:"任职回报≈427%~455%", note:"近3年夏普1.17；风格极致集中、弹性高但回撤深。板块内ETF被动跟踪国证/中证半导体指数，主动基看郑巍山、刘慧影(诺安)等。"}, pool:[
-    {code:"512480", name:"国联安中证全指半导体ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159995", name:"华夏国证半导体芯片ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"512760", name:"国泰CES半导体芯片ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159813", name:"鹏华国证半导体芯片ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"半导体/芯片", boss:{name:"郑巍山", fund:"银河创新成长A(519674)", style:"主动·成长集中", ret:"任职回报≈427%~455%", note:"近3年夏普1.17；风格极致集中、弹性高但回撤深。板块内 ETF 联接被动跟踪国证/中证半导体指数，主动基看郑巍山、刘慧影(诺安)等。"}, pool:[
+    {code:"007300", name:"国联安中证半导体ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"320007", name:"诺安成长混合A", kind:"fund", mgr:"刘慧影"},
+    {code:"519674", name:"银河创新成长A", kind:"fund", mgr:"郑巍山"}
   ]},
-  { name:"有色金属(贵金属)", boss:{name:"吴国清", fund:"前海开源金银珠宝(002207)", style:"黄金/有色主动", ret:"任职回报约130%", note:"以金银、有色资源股为主，弹性随金价与工业金属周期；板块内也有黄金/白银/有色期货ETF可分散配置。"}, pool:[
-    {code:"512400", name:"南方中证有色金属ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"518880", name:"华安黄金ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159934", name:"易方达黄金ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"161226", name:"国投瑞银白银期货A", kind:"fund", mgr:"主动·白银"},
-    {code:"159980", name:"大成有色金属期货ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"有色金属(贵金属)", boss:{name:"吴国清", fund:"前海开源金银珠宝(002207)", style:"黄金/有色主动", ret:"任职回报约130%", note:"以金银、有色资源股为主，弹性随金价与工业金属周期；板块内也有黄金/白银/有色期货 ETF 联接可分散配置。"}, pool:[
+    {code:"004432", name:"南方有色金属ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"000216", name:"华安黄金ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"161226", name:"国投瑞银白银期货A", kind:"fund", mgr:"主动·白银"}
   ]},
-  { name:"电网设备", boss:{index:true, name:"指数被动", fund:"跟踪中证电网设备主题指数", style:"特高压/智能电网设备", ret:"—", note:"电网设备多为指数ETF，被动跟踪中证电网设备主题指数（特高压+智能电网设备），无单一经理；选规模大、费率低者。"}, pool:[
-    {code:"159326", name:"华夏中证电网设备ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"561380", name:"国泰中证电网设备ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159320", name:"广发中证电网设备ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"电网设备", boss:{index:true, name:"指数被动", fund:"跟踪中证电网设备主题指数", style:"特高压/智能电网设备", ret:"—", note:"电网设备多为指数 ETF 联接，被动跟踪中证电网设备主题指数（特高压+智能电网设备），无单一经理；选规模大、费率低者。"}, pool:[
+    {code:"023638", name:"国泰A股电网设备ETF联接A", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"电力", boss:{index:true, name:"指数被动", fund:"跟踪电力/绿电指数", style:"公用事业·防御", ret:"—", note:"电力多为指数ETF，防御属性较强，适合作为组合稳定器；含传统电力与绿电。"}, pool:[
-    {code:"159611", name:"广发中证全指电力ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"561560", name:"华泰柏瑞中证电力ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"561700", name:"博时中证全指电力ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"562550", name:"华夏中证绿色电力ETF", kind:"etf", market:"sh", mgr:"指数团队"}
+  { name:"电力", boss:{index:true, name:"指数被动", fund:"跟踪电力/绿电指数", style:"公用事业·防御", ret:"—", note:"电力多为指数 ETF 联接，防御属性较强，适合作为组合稳定器；含传统电力与绿电。"}, pool:[
+    {code:"016185", name:"广发电力ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"019058", name:"易方达绿色电力ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"021752", name:"南方电力ETF联接A", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"科技AI/全球科技", boss:{name:"郑希", fund:"易方达信息产业A(001513)", style:"科技成长", ret:"任职回报约284%", note:"现任'公募一哥'(在管约579亿)，'景气周期拼接'框架，聚焦AI算力+半导体设备。板块同时含A股AI/云计算ETF与全球科技QDII(纳指/标普/印度/港股科技)。"}, pool:[
-    {code:"159819", name:"易方达人工智能ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"515980", name:"华富中证人工智能ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159738", name:"华泰柏瑞中证云计算ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"513100", name:"国泰纳斯达克100ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"513500", name:"博时标普500ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"164824", name:"工银印度基金人民币", kind:"fund", mgr:"指数团队"},
-    {code:"513020", name:"国泰中证港股科技ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159941", name:"广发纳斯达克100ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"科技AI/全球科技", boss:{name:"郑希", fund:"易方达信息产业A(001513)", style:"科技成长", ret:"任职回报约284%", note:"现任'公募一哥'(在管约579亿)，'景气周期拼接'框架，聚焦AI算力+半导体设备。板块同时含 A 股 AI/云计算 ETF 联接与全球科技 QDII(纳指/标普/印度/港股科技)。"}, pool:[
+    {code:"008585", name:"华夏人工智能ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"017853", name:"易方达云计算ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"000834", name:"大成纳斯达克100ETF联接(QDII)A", kind:"fund", mgr:"指数团队"},
+    {code:"050025", name:"博时标普500ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"024885", name:"天弘港股科技ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"164824", name:"工银印度基金人民币", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"红利", boss:{index:true, name:"指数被动", fund:"跟踪红利类指数", style:"高股息一篮子", ret:"—", note:"红利多为指数ETF，分散持有一篮子高股息股，无单一经理；含A股红利、红利低波、港股红利。"}, pool:[
-    {code:"510880", name:"华泰柏瑞红利ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"515080", name:"招商中证红利ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"512890", name:"华泰柏瑞红利低波ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159691", name:"工银中证港股通高股息ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"红利", boss:{index:true, name:"指数被动", fund:"跟踪红利类指数", style:"高股息一篮子", ret:"—", note:"红利多为指数 ETF 联接，分散持有一篮子高股息股，无单一经理；含 A 股红利、红利低波。"}, pool:[
+    {code:"161907", name:"红利ETF联接", kind:"fund", mgr:"指数团队"},
+    {code:"009051", name:"易方达中证红利ETF联接发起式A", kind:"fund", mgr:"指数团队"},
+    {code:"012643", name:"招商中证红利ETF联接A", kind:"fund", mgr:"指数团队"}
   ]},
   { name:"军工/航天", boss:{name:"何崇恺", fund:"易方达国防军工A(001475)", style:"军工信息化/军贸", ret:"任期4年+22.56%", note:"年化回报约22%，聚焦军工新逻辑(信息化/军贸/民机)；航天(卫星/火箭/商业航天)为军工子领域，一并纳入。"}, pool:[
-    {code:"512660", name:"国泰中证军工ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"512810", name:"华宝中证军工ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"512670", name:"鹏华中证国防ETF", kind:"etf", market:"sh", mgr:"指数团队"}
+    {code:"003017", name:"广发中证军工ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"001475", name:"易方达国防军工A", kind:"fund", mgr:"何崇恺"}
   ]},
   { name:"医药", boss:{name:"葛兰", fund:"中欧医疗健康A(003095)", style:"创新药/CXO成长", ret:"任职回报约123%~215%", note:"医药主题代表经理，规模314亿；赵蓓(工银前沿医疗)波动控制更优，二者并称医药双姝。"}, pool:[
-    {code:"512010", name:"易方达医药ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159929", name:"汇添富中证医药卫生ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"512290", name:"国泰中证生物医药ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"161726", name:"招商国证生物医药A", kind:"fund", mgr:"指数"}
+    {code:"001344", name:"易方达医药ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"006756", name:"国泰中证生物医药ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"003095", name:"中欧医疗健康A", kind:"fund", mgr:"葛兰"},
+    {code:"161726", name:"招商国证生物医药A", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"新能源", boss:{name:"崔宸龙", fund:"前海开源新经济A(000689)", style:"新能源+公用事业", ret:"任职回报约130%", note:"材料学博士，成长弹性大；华夏能源革新现由杨宇接任。板块含新能源车/新能源/电池ETF与主动基。"}, pool:[
-    {code:"515030", name:"华夏中证新能源车ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"516160", name:"南方中证新能源ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159755", name:"广发国证新能源车电池ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"161028", name:"富国中证新能源汽车A", kind:"fund", mgr:"指数"}
+  { name:"新能源", boss:{name:"崔宸龙", fund:"前海开源新经济A(000689)", style:"新能源+公用事业", ret:"任职回报约130%", note:"材料学博士，成长弹性大；华夏能源革新现由杨宇接任。板块含新能源车/新能源/电池 ETF 联接与主动基。"}, pool:[
+    {code:"012831", name:"南方中证新能源ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"015873", name:"工银锂电池ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"161028", name:"富国中证新能源汽车A", kind:"fund", mgr:"指数团队"},
+    {code:"160225", name:"新能源汽车LOF", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"锂矿", boss:{index:true, name:"指数被动", fund:"跟踪稀有金属/矿业指数", style:"锂电上游资源", ret:"—", note:"锂矿多为稀有金属/矿业ETF，被动跟踪含锂量高的资源指数（盐湖股份、赣锋锂业、天齐锂业等），无单一经理。"}, pool:[
-    {code:"562800", name:"嘉实中证稀有金属ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159690", name:"招商中证有色金属矿业ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"561160", name:"华泰柏瑞中证锂电池ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159608", name:"广发中证稀有金属ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"锂矿", boss:{index:true, name:"指数被动", fund:"跟踪稀有金属/矿业指数", style:"锂电上游资源", ret:"—", note:"锂矿多为稀有金属/矿业 ETF 联接，被动跟踪含锂量高的资源指数（盐湖股份、赣锋锂业、天齐锂业等），无单一经理。"}, pool:[
+    {code:"019874", name:"广发稀有金属ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"015873", name:"工银锂电池ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"004432", name:"南方有色金属ETF联接A", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"恒生科技", boss:{index:true, name:"指数被动", fund:"跟踪恒生科技指数", style:"港股科技龙头", ret:"—", note:"恒生科技多为指数ETF，含腾讯/阿里/美团/小米等港股科技龙头，无单一经理；受美债利率与南向资金影响大。"}, pool:[
-    {code:"513180", name:"华夏恒生科技ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"513130", name:"华泰柏瑞南方东英恒生科技ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"513330", name:"华夏恒生互联网科技业ETF", kind:"etf", market:"sh", mgr:"指数团队"}
+  { name:"恒生科技", boss:{index:true, name:"指数被动", fund:"跟踪恒生科技指数", style:"港股科技龙头", ret:"—", note:"恒生科技多为指数 ETF 联接，含腾讯/阿里/美团/小米等港股科技龙头，无单一经理；受美债利率与南向资金影响大。"}, pool:[
+    {code:"012348", name:"天弘恒生科技ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"012804", name:"广发恒生科技ETF联接(QDII)A", kind:"fund", mgr:"指数团队"},
+    {code:"013127", name:"汇添富恒生科技ETF联接发起式(QDII)A", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"光伏", boss:{index:true, name:"指数被动", fund:"跟踪光伏产业指数", style:"新能源细分", ret:"—", note:"光伏多为指数ETF，被动跟踪；行业周期波动大，注意估值位置。"}, pool:[
-    {code:"515790", name:"华泰柏瑞中证光伏产业ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159857", name:"天弘中证光伏产业ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"159864", name:"国泰中证光伏产业ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+  { name:"光伏", boss:{index:true, name:"指数被动", fund:"跟踪光伏产业指数", style:"新能源细分", ret:"—", note:"光伏多为指数 ETF 联接，被动跟踪；行业周期波动大，注意估值位置。"}, pool:[
+    {code:"012679", name:"华泰柏瑞光伏ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"012831", name:"南方中证新能源ETF联接A", kind:"fund", mgr:"指数团队"}
   ]},
   { name:"白酒消费", boss:{name:"萧楠", fund:"易方达消费行业(110022)", style:"大盘成长", ret:"任职13年+256%", note:"5座金牛奖，长跑稳健；侯昊管的招商白酒为指数型，被动跟踪中证白酒。"}, pool:[
-    {code:"161725", name:"招商中证白酒A", kind:"fund", mgr:"指数"},
-    {code:"512690", name:"鹏华中证酒ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159928", name:"汇添富中证主要消费ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"160632", name:"鹏华酒A", kind:"fund", mgr:"指数"},
-    {code:"159670", name:"国联安中证消费50ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+    {code:"161725", name:"招商中证白酒A", kind:"fund", mgr:"指数团队"},
+    {code:"160632", name:"鹏华酒A", kind:"fund", mgr:"指数团队"},
+    {code:"000248", name:"汇添富中证主要消费ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"110022", name:"易方达消费行业", kind:"fund", mgr:"萧楠"}
   ]},
-  { name:"粮食", boss:{index:true, name:"指数被动", fund:"跟踪农业/粮食指数", style:"农粮分散", ret:"—", note:"农业多为指数ETF，受粮价与政策影响；含农业、养殖、粮食细分，无单一最佳经理，选规模大者。"}, pool:[
-    {code:"159825", name:"富国中证农业ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"159865", name:"国泰中证畜牧养殖ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"159698", name:"鹏华中证粮食ETF", kind:"etf", market:"sz", mgr:"指数团队"},
-    {code:"516550", name:"嘉实中证大农业ETF", kind:"etf", market:"sh", mgr:"指数团队"}
+  { name:"粮食", boss:{index:true, name:"指数被动", fund:"跟踪农业/粮食指数", style:"农粮分散", ret:"—", note:"农业多为指数增强基金，受粮价与政策影响；含农业、养殖、粮食细分，无单一最佳经理，选规模大者。"}, pool:[
+    {code:"001027", name:"前海开源中证大农业指数增强A", kind:"fund", mgr:"指数团队"},
+    {code:"015484", name:"前海开源中证大农业指数增强C", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"高波固收", boss:{index:true, name:"指数被动", fund:"可转债ETF", style:"高波动债券", ret:"—", note:"高波固收以可转债ETF为代表，波动显著高于普通债基（兼具债底与股性），适合作为组合中的弹性防守仓；非纯债，仍含权益波动。"}, pool:[
-    {code:"511380", name:"博时可转债ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"511180", name:"海富通上证可转债ETF", kind:"etf", market:"sh", mgr:"指数团队"}
+  { name:"高波固收", boss:{index:true, name:"指数被动", fund:"可转债基金", style:"高波动债券", ret:"—", note:"高波固收以可转债基金为代表，波动显著高于普通债基（兼具债底与股性），适合作为组合中的弹性防守仓；非纯债，仍含权益波动。"}, pool:[
+    {code:"470058", name:"汇添富可转换债券A", kind:"fund", mgr:"指数团队"},
+    {code:"019540", name:"富国可转换债券E", kind:"fund", mgr:"指数团队"}
   ]},
   { name:"沪深300", boss:{index:true, name:"指数被动", fund:"跟踪沪深300", style:"宽基大盘", ret:"—", note:"沪深300宽基指数无单一经理，选规模大、费率低者；适合作为组合底仓与业绩基准对照。"}, pool:[
-    {code:"510300", name:"华泰柏瑞沪深300ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"510310", name:"易方达沪深300ETF发起式", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"159919", name:"嘉实沪深300ETF", kind:"etf", market:"sz", mgr:"指数团队"}
+    {code:"000051", name:"华夏沪深300ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"000961", name:"天弘沪深300ETF联接A", kind:"fund", mgr:"指数团队"},
+    {code:"005102", name:"工银沪深300ETF联接A", kind:"fund", mgr:"指数团队"}
   ]},
-  { name:"煤炭", boss:{index:true, name:"指数被动", fund:"跟踪中证煤炭指数", style:"能源·周期", ret:"—", note:"煤炭多为指数ETF/LOF，强周期、高股息，与商品价格高度相关；无单一经理。"}, pool:[
-    {code:"515220", name:"国泰中证煤炭ETF", kind:"etf", market:"sh", mgr:"指数团队"},
-    {code:"161032", name:"富国中证煤炭A", kind:"fund", mgr:"指数"}
+  { name:"煤炭", boss:{index:true, name:"指数被动", fund:"跟踪中证煤炭指数", style:"能源·周期", ret:"—", note:"煤炭多为指数 ETF 联接，强周期、高股息，与商品价格高度相关；无单一经理。"}, pool:[
+    {code:"161032", name:"富国中证煤炭A", kind:"fund", mgr:"指数团队"},
+    {code:"008279", name:"国泰中证煤炭ETF联接A", kind:"fund", mgr:"指数团队"}
   ]}
 ];
 
@@ -487,18 +472,39 @@ function getEtfQuote(secid){
     .catch(()=>null);
 }
 
-/* 多通道解析基金真实名称：pingzhongdata 的 fS_name 只在主通道成功时才有，
-   这里用 push2 实时行情做兜底（f58=中文简称），覆盖主通道失败/被拦截的情况。 */
+/* 多通道解析基金真实名称：pingzhongdata 的 fS_name 只在主通道成功时才有。
+   兜底方案：
+   1) push2 实时行情（f58=中文简称），适合场内 ETF；场外基金尝试 0./1. 两个市场前缀。
+   2) searchapi 搜索建议（type=14），返回 Name 字段，对场外基金尤其稳。
+   任意一路成功即返回基金真实名称。 */
 function resolveFundName(code, market, kind){
-  const secid = (kind==="etf" ? (market==="sh"?"1":"0") : "0") + "." + code;
-  const url = "https://push2.eastmoney.com/api/qt/stock/get?secid=" + secid + "&fields=f57,f58";
-  return jsonpGet(url)
-    .then(d=>{
-      const q = d && d.data ? d.data : null;
-      if(q && q.f58) return String(q.f58).trim();
-      return null;
-    })
-    .catch(()=>null);
+  function tryPush2(secid){
+    const url = "https://push2.eastmoney.com/api/qt/stock/get?secid=" + secid + "&fields=f57,f58";
+    return jsonpGet(url)
+      .then(d=>{
+        const q = d && d.data ? d.data : null;
+        if(q && q.f58) return String(q.f58).trim();
+        return null;
+      })
+      .catch(()=>null);
+  }
+  function trySearch(){
+    const url = "https://searchapi.eastmoney.com/api/suggest/get?input=" + code + "&type=14&count=1";
+    return jsonpGet(url)
+      .then(d=>{
+        const data = d && d.QuotationCodeTable && d.QuotationCodeTable.Data ? d.QuotationCodeTable.Data : [];
+        if(data.length && data[0].Name) return String(data[0].Name).trim();
+        return null;
+      })
+      .catch(()=>null);
+  }
+  if(kind === "etf"){
+    const secid = (market === "sh" ? "1." : "0.") + code;
+    return tryPush2(secid).then(name => name || trySearch());
+  }
+  // 场外基金：push2 市场前缀不确定，0./1. 都试，再用 searchapi 兜底
+  return Promise.all([tryPush2("0."+code), tryPush2("1."+code)])
+    .then(names => names.find(n => n) || trySearch());
 }
 /* ============ 指标计算 ============ */
 function calcMetrics(series){
