@@ -1963,6 +1963,55 @@ function posBoxHtml(item, d, fundSent){
   return html;
 }
 
+/* ============ ☁️ Gist 云同步（v6.3.7）============
+   持仓数据存到 GitHub Gist，实现多设备同步。
+   读取：Gist raw 链接（公开，不需 token）→ fetch（纯前端可用，但需 CORS）
+         GitHub raw 支持 CORS，可直接 fetch。
+   写入：GitHub API PATCH /gists/{id} → 需 Personal Access Token（存 localStorage）。
+   设置：Gist ID + Token 存 localStorage（GIST_KEY）。 */
+const GIST_KEY = "fund_selector_gist_v1";
+const GIST_FILENAME = "fund-selector-positions.json";
+function getGistConfig(){ try{ return JSON.parse(localStorage.getItem(GIST_KEY)||"{}"); }catch(e){ return {}; } }
+function saveGistConfig(cfg){ localStorage.setItem(GIST_KEY, JSON.stringify(cfg)); }
+// 读 Gist：通过 raw 链接 fetch（GitHub raw 支持 CORS）
+async function readFromGist(gistId){
+  if(!gistId) throw new Error("未配置 Gist ID");
+  // raw 链接格式：https://gist.githubusercontent.com/{user}/{gistId}/raw/{filename}
+  // 不知道 user 名时，用 api.github.com/gists/{id} 先拿 owner（也要 CORS，GitHub API 支持）
+  const apiUrl = "https://api.github.com/gists/" + gistId;
+  const r = await fetch(apiUrl, { headers: { "Accept":"application/vnd.github+json" } });
+  if(!r.ok) throw new Error("Gist 读取失败: HTTP "+r.status);
+  const data = await r.json();
+  const file = data.files && data.files[GIST_FILENAME];
+  if(!file) throw new Error("Gist 中无 "+GIST_FILENAME+" 文件");
+  const content = file.content || "[]";
+  return JSON.parse(content);
+}
+// 写 Gist：PATCH /gists/{id}，需 token
+async function writeToGist(gistId, token, positions){
+  if(!gistId) throw new Error("未配置 Gist ID");
+  if(!token) throw new Error("未配置 GitHub Token");
+  const apiUrl = "https://api.github.com/gists/" + gistId;
+  const body = JSON.stringify({
+    description: "选基助手持仓数据 " + new Date().toLocaleString("zh-CN"),
+    files: { [GIST_FILENAME]: { content: JSON.stringify(positions, null, 2) } }
+  });
+  const r = await fetch(apiUrl, {
+    method: "PATCH",
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": "Bearer " + token,
+      "X-GitHub-Api-Version": "2022-11-28"
+    },
+    body: body
+  });
+  if(!r.ok) {
+    const err = await r.text();
+    throw new Error("Gist 写入失败: HTTP "+r.status+" "+err.slice(0,100));
+  }
+  return true;
+}
+
 /* ============ 自选对比模块 ============ */
 const CUSTOM_KEY = "fund_selector_custom_v1";
 function getCustoms(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY)||"[]"); }catch(e){ return []; } }
@@ -2035,6 +2084,27 @@ function renderCustom(){
     '<div class="hint">填了成本+份额才会算盈亏和止损止盈线；只填代码也可作为自选观察（不显示盈亏）</div>';
   box.appendChild(form);
 
+  // ☁️ 云同步设置区（v6.3.7）
+  const cfg = getGistConfig();
+  const syncBox = document.createElement("div");
+  syncBox.className = "cform";
+  syncBox.style.background = "#f0f9ff";
+  syncBox.style.border = "1px solid #bae6fd";
+  syncBox.innerHTML =
+    '<div style="font-size:13px;font-weight:800;color:#0369a1;margin-bottom:8px">☁️ 云同步（多设备共享持仓）</div>' +
+    '<div class="pos-fields">' +
+      '<div><label>Gist ID</label><input type="text" id="gistId" class="pos-input" placeholder="如 abc123def456" value="'+(cfg.gistId||'')+'"></div>' +
+      '<div><label>GitHub Token</label><input type="password" id="gistToken" class="pos-input" placeholder="ghp_开头的PAT" value="'+(cfg.token||'')+'"></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">' +
+      '<button class="favbtn" id="gistSave" style="border-color:#0369a1;color:#0369a1">💾 保存配置</button>' +
+      '<button class="favbtn" id="gistUpload" style="border-color:#0369a1;color:#0369a1">⬆️ 上传到云</button>' +
+      '<button class="favbtn" id="gistDownload" style="border-color:#0369a1;color:#0369a1">⬇️ 从云下载</button>' +
+    '</div>' +
+    '<div class="hint" id="gistStatus" style="margin-top:6px;min-height:16px"></div>' +
+    '<div class="hint" style="line-height:1.6">用法：①去 gist.github.com 建一个公开 Gist，文件名填 fund-selector-positions.json，内容写 [] ②去 github.com/settings/tokens 建一个 Classic Token，勾选 gist 权限 ③把 Gist ID 和 Token 填上面，点保存 ④电脑改完持仓点"⬆️上传到云"，手机打开点"⬇️从云下载"即可同步</div>';
+  box.appendChild(syncBox);
+
   const listBox = document.createElement("div");
   listBox.id = "cusList";
   box.appendChild(listBox);
@@ -2045,6 +2115,46 @@ function renderCustom(){
   };
   $("#cusAdd").onclick = ()=>addCustom();
   $("#cusCode").addEventListener("keydown", (e)=>{ if(e.key==="Enter") addCustom(); });
+
+  // 云同步事件
+  $("#gistSave").onclick = ()=>{
+    const c = { gistId: $("#gistId").value.trim(), token: $("#gistToken").value.trim() };
+    if(!c.gistId || !c.token){ $("#gistStatus").innerHTML = '<span style="color:#dc2626">⚠️ Gist ID 和 Token 都要填</span>'; return; }
+    saveGistConfig(c);
+    $("#gistStatus").innerHTML = '<span style="color:#16a34a">✅ 配置已保存（仅存本浏览器）</span>';
+  };
+  $("#gistUpload").onclick = async ()=>{
+    const c = getGistConfig();
+    if(!c.gistId || !c.token){ $("#gistStatus").innerHTML = '<span style="color:#dc2626">⚠️ 请先填写并保存 Gist ID 和 Token</span>'; return; }
+    $("#gistStatus").innerHTML = '<span style="color:#0369a1">⏳ 正在上传…</span>';
+    try {
+      const list = getCustoms();
+      await writeToGist(c.gistId, c.token, list);
+      $("#gistStatus").innerHTML = '<span style="color:#16a34a">✅ 已上传 '+list.length+' 只持仓到云（'+new Date().toLocaleTimeString("zh-CN")+'）</span>';
+    } catch(e){
+      $("#gistStatus").innerHTML = '<span style="color:#dc2626">❌ '+e.message+'</span>';
+    }
+  };
+  $("#gistDownload").onclick = async ()=>{
+    const c = getGistConfig();
+    if(!c.gistId){ $("#gistStatus").innerHTML = '<span style="color:#dc2626">⚠️ 请先填写 Gist ID</span>'; return; }
+    $("#gistStatus").innerHTML = '<span style="color:#0369a1">⏳ 正在下载…</span>';
+    try {
+      const cloudList = await readFromGist(c.gistId);
+      if(!Array.isArray(cloudList)) throw new Error("云端数据格式错误");
+      // 询问是否覆盖
+      const localList = getCustoms();
+      if(localList.length > 0 && !confirm("本地有 "+localList.length+" 只持仓，云端有 "+cloudList.length+" 只。确定用云端覆盖本地吗？（本地数据会丢失）")){
+        $("#gistStatus").innerHTML = '<span style="color:#9ca3af">已取消</span>';
+        return;
+      }
+      saveCustoms(cloudList);
+      $("#gistStatus").innerHTML = '<span style="color:#16a34a">✅ 已从云下载 '+cloudList.length+' 只持仓，覆盖本地</span>';
+      refreshCustomList();
+    } catch(e){
+      $("#gistStatus").innerHTML = '<span style="color:#dc2626">❌ '+e.message+'</span>';
+    }
+  };
 
   refreshCustomList();
 }
