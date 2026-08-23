@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.5.0 · 热门板块 Top3</title>
+<title>选基助手 v6.5.2 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -6216,8 +6216,8 @@ async function readFromGist(gistId){
   // 容错：云端内容若被双重 JSON 化（字符串形式），再解一层
   if(typeof arr === "string"){ try{ arr = JSON.parse(arr); }catch(e){ arr = []; } }
   if(!Array.isArray(arr)) throw new Error("云端数据格式错误（非数组）");
-  // 过滤脏条目：只保留含有效 6 位 code 的对象，避免脏数据拖垮后续逻辑
-  arr = arr.filter(x=> x && typeof x === "object" && typeof x.code === "string" && /^\d{6}$/.test(x.code));
+  // 规范化：code 强转字符串、类型字段统一、数值字段清洗，剔除非法条目
+  arr = arr.map(normalizeCustomItem).filter(Boolean);
   return arr;
 }
 // 写 Gist：PATCH /gists/{id}，需 token
@@ -6247,6 +6247,22 @@ async function writeToGist(gistId, token, positions){
 
 /* ============ 自选对比模块 ============ */
 const CUSTOM_KEY = "fund_selector_custom_v1";
+// 规范化单条持仓数据：确保 code 是 6 位字符串，kind/market 是字符串，
+// cost/shares/realized 是数字或 null，剔除非法条目
+function normalizeCustomItem(x){
+  if(!x || typeof x !== "object") return null;
+  let code = (x.code != null) ? String(x.code).trim() : "";
+  if(!/^\d{6}$/.test(code)) return null;
+  let kind = (x.kind === "etf") ? "etf" : "fund";
+  let market = (typeof x.market === "string") ? x.market : "";
+  if(kind === "etf" && !market) market = guessMarket(code);
+  const out = { code, kind, market, name: (typeof x.name === "string" && x.name) ? x.name : code };
+  if(x.cost != null && !isNaN(parseFloat(x.cost)) && parseFloat(x.cost) > 0) out.cost = parseFloat(x.cost);
+  if(x.shares != null && !isNaN(parseFloat(x.shares)) && parseFloat(x.shares) > 0) out.shares = parseFloat(x.shares);
+  if(x.realized != null && !isNaN(parseFloat(x.realized))) out.realized = parseFloat(x.realized);
+  if(x.note != null && typeof x.note === "string") out.note = x.note;
+  return out;
+}
 function getCustoms(){
   try{
     const raw = localStorage.getItem(CUSTOM_KEY);
@@ -6255,10 +6271,15 @@ function getCustoms(){
     // 容错：若存的是字符串（如云端双重 JSON 化的脏数据），尝试再解一层；仍非数组则复位为空
     if(typeof v === "string"){ try{ v = JSON.parse(v); }catch(e){ v = []; } }
     if(!Array.isArray(v)) v = [];
-    return v;
+    return v.map(normalizeCustomItem).filter(Boolean);
   }catch(e){ return []; }
 }
-function saveCustoms(list){ try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(Array.isArray(list)?list:[])); }catch(e){} }
+function saveCustoms(list){
+  try{
+    const arr = (Array.isArray(list) ? list : []).map(normalizeCustomItem).filter(Boolean);
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr));
+  }catch(e){}
+}
 function guessMarket(code){
   // 沪市ETF以51/56/58开头，深市以15/16开头；场外基金返回空
   const c = code.slice(0,2);
@@ -6469,6 +6490,7 @@ function removeCustom(code){
   refreshCustomList();
 }
 async function refreshCustomList(){
+  try{
   const box = $("#cusList"); box.innerHTML = "";
   // 注：不再 await loadSentiment(current) —— 持仓卡各自走 getSentimentForFund（独立板块恐贪），
   //     开头这步 await 只是为 window.__marketSentiment 兜底（renderOverview 用），与持仓渲染无关；
@@ -6560,6 +6582,9 @@ async function refreshCustomList(){
       const sumResult = summaryBoxHtml(list, ds);
       const box2 = $("#cusList");
       if(sumResult.summary){
+        // v6.5.2：替换汇总卡前，先移除旧的亏损排序表，否则旧表会残留，导致刷新一次多一张表
+        const oldRank = box2.querySelector("#rankBox");
+        if(oldRank) oldRank.remove();
         const oldSummary = box2.querySelector(".summary-box");
         if(oldSummary) oldSummary.outerHTML = sumResult.summary;
         if(sumResult.rank){
@@ -6577,6 +6602,8 @@ async function refreshCustomList(){
       } else {
         const oldSummary = box2.querySelector(".summary-box");
         if(oldSummary) oldSummary.remove();
+        const oldRank = box2.querySelector("#rankBox");
+        if(oldRank) oldRank.remove();
       }
     });
   return; // 提前返回，卡片与汇总数据由上面的异步填充
@@ -6648,6 +6675,11 @@ async function refreshCustomList(){
     if(oldSummary) oldSummary.remove();
   }
   // 不再做跨板块对比：持仓跨多板块，与"当前板块 Top3"对比无意义
+  } catch(e){
+    console.error("refreshCustomList error", e);
+    const box = $("#cusList");
+    if(box) box.innerHTML += '<div style="color:#dc2626;padding:10px">持仓列表渲染异常：'+ (e && e.message ? e.message : e) +'</div>';
+  }
 }
 // 保存已实现盈亏
 function saveRealized(item, val){
