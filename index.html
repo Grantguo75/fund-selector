@@ -235,6 +235,41 @@
   .diag-advice-head { font-size:11px; font-weight:700; color:#1e40af; margin-bottom:4px; }
   .diag-advice { font-size:11px; color:#1e293b; line-height:1.7; background:#fff; border-radius:8px; padding:7px 9px; margin-bottom:6px; }
   .diag-note { font-size:10px; color:#9ca3af; line-height:1.5; }
+  /* ============ 📊 技术面汇总看板（v6.4.0）============ */
+  .tech-summary { background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%); border:1px solid #7dd3fc; border-radius:12px; padding:11px 13px; margin:0 12px 10px; }
+  .ts-head { font-size:13px; font-weight:800; color:#0c4a6e; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+  .ts-head small { font-size:10px; font-weight:400; color:#0369a1; }
+  .ts-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px; }
+  .ts-cell { background:#fff; border-radius:8px; padding:8px 6px; text-align:center; }
+  .ts-cell .k { font-size:10px; color:#6b7280; margin-bottom:3px; }
+  .ts-cell .v { font-size:14px; font-weight:800; line-height:1.2; }
+  .ts-cell.gold .v { color:#d97706; }
+  .ts-cell.dead .v { color:#dc2626; }
+  .ts-cell.score .v.up { color:#d92b2b; }
+  .ts-cell.score .v.down { color:#13a05a; }
+  .ts-cell.score .v.flat { color:#6b7280; }
+  .ts-cell.bias .v.hot { color:#dc2626; }
+  .ts-cell.bias .v.cold { color:#13a05a; }
+  .ts-cell.bias .v.mid { color:#6b7280; }
+  .ts-trend { font-size:11px; color:#0c4a6e; padding:7px 9px; background:rgba(255,255,255,.55); border-radius:8px; line-height:1.6; }
+  .ts-trend b { color:#075985; font-size:12px; }
+  /* AI 投票诊断（v6.4.0） */
+  .ai-box { background:#1e1b4b; color:#e0e7ff; border-radius:12px; padding:12px 14px; margin:0 12px 10px; border:1px solid #4338ca; }
+  .ai-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .ai-head b { font-size:13px; color:#fbbf24; }
+  .ai-progress { font-size:10px; color:#a5b4fc; }
+  .ai-pattern { font-size:12px; font-weight:700; color:#fef3c7; margin-bottom:6px; }
+  .ai-why { font-size:11px; color:#c7d2fe; line-height:1.7; margin-bottom:8px; }
+  .ai-advice { font-size:11px; color:#fef9c3; line-height:1.7; background:rgba(255,255,255,.06); border-radius:8px; padding:7px 9px; margin-bottom:6px; }
+  .ai-vote { font-size:10px; color:#a5b4fc; line-height:1.6; }
+  .ai-vote b { color:#fbbf24; font-size:11px; }
+  .ai-set { font-size:10px; color:#a5b4fc; margin-top:6px; padding-top:6px; border-top:1px dashed rgba(165,180,252,.3); }
+  .ai-set a { color:#fbbf24; text-decoration:underline; cursor:pointer; }
+  .ai-btn { display:inline-block; padding:6px 12px; background:#4338ca; color:#fef3c7; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:none; margin-top:6px; }
+  .ai-btn:hover { background:#5b52d6; }
+  .ai-btn:disabled { background:#374151; color:#9ca3af; cursor:not-allowed; }
+  .ai-key-row { display:flex; gap:6px; margin-top:6px; }
+  .ai-key-row input { flex:1; padding:5px 8px; border:1px solid #4338ca; border-radius:6px; font-size:11px; background:rgba(255,255,255,.08); color:#fef3c7; }
   /* ============ 📰 板块资讯 ============ */
   .news-box { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:11px 13px; margin:0 12px 10px; }
   .news-head { font-size:13px; font-weight:800; color:#1e293b; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
@@ -1458,6 +1493,254 @@ function diagnoseEl(diag){
   return el;
 }
 
+/* ============ 📊 技术面汇总看板（v6.4.0）============
+   把板块内 Top3 基金的技术面聚合成一张紧凑卡片，让用户不用展开每只基金也能看板块技术面强弱。
+   输出：金叉/死叉/中性只数 + 平均强度分 + 平均乖离率 + 整体 MA20 趋势 */
+function techSummaryEl(top){
+  if(!top || !top.length) return null;
+  // 只统计有技术面数据的基金
+  const techs = top.filter(d=>d.tech);
+  if(!techs.length) return null;
+  let gold=0, dead=0, neutral=0;
+  let scoreSum=0, biasSum=0;
+  techs.forEach(d=>{
+    const t = d.tech;
+    scoreSum += t.score;
+    biasSum += t.bias5 || 0;
+    if(t.crossTag==="金叉") gold++;
+    else if(t.crossTag==="死叉") dead++;
+    else neutral++;
+  });
+  const avgScore = scoreSum / techs.length;
+  const avgBias = biasSum / techs.length;
+  // 平均分方向（涨=红、跌=绿、平=灰，中国市场惯例）
+  const dirCls = avgScore > 0.5 ? "up" : (avgScore < -0.5 ? "down" : "flat");
+  const dirArrow = avgScore > 0.5 ? "↑" : (avgScore < -0.5 ? "↓" : "→");
+  // 乖离率方向（>5%偏热、<-5%偏冷、其余中性）
+  const biasCls = avgBias > 0.05 ? "hot" : (avgBias < -0.05 ? "cold" : "mid");
+  const biasLbl = avgBias > 0.05 ? "偏热" : (avgBias < -0.05 ? "偏冷" : "适中");
+  // 整体趋势描述
+  const trendText = (function(){
+    if(gold > dead && avgScore >= 1) return '多只金叉 + 强度分转正，<b>短线偏多</b>，可沿 MA5 轻仓跟进';
+    if(dead > gold && avgScore <= -1) return '出现死叉 + 强度分转负，<b>短线转弱</b>，跌破 MA10 减仓';
+    if(gold === 0 && dead === 0 && Math.abs(avgScore) < 1) return '金叉/死叉未出现，<b>方向不明观望</b>，等信号明确';
+    if(gold === dead) return '金叉/死叉数量持平，<b>震荡</b>，不构成强趋势';
+    return '信号不一致，<b>谨慎</b>，建议等信号收敛';
+  })();
+  const el = document.createElement("div");
+  el.className = "tech-summary";
+  el.innerHTML =
+    '<div class="ts-head">📊 技术面汇总 · Top'+techs.length+' <small>板块整体技术面强弱 · 红涨绿跌</small></div>' +
+    '<div class="ts-grid">' +
+      '<div class="ts-cell gold"><div class="k">🔔 金叉</div><div class="v">'+gold+'</div></div>' +
+      '<div class="ts-cell dead"><div class="k">⚠ 死叉</div><div class="v">'+dead+'</div></div>' +
+      '<div class="ts-cell"><div class="k">⚖ 中性</div><div class="v" style="color:#6b7280">'+neutral+'</div></div>' +
+      '<div class="ts-cell score"><div class="k">💪 平均强度</div><div class="v '+dirCls+'">'+avgScore.toFixed(1)+' '+dirArrow+'</div></div>' +
+      '<div class="ts-cell"><div class="k">📈 信号数</div><div class="v" style="color:#1e293b;font-size:11px">🔔'+gold+' ⚠'+dead+' ⚖'+neutral+'</div></div>' +
+      '<div class="ts-cell bias"><div class="k">🔥 平均乖离</div><div class="v '+biasCls+'">'+biasLbl+'</div></div>' +
+    '</div>' +
+    '<div class="ts-trend">📌 趋势研判：'+trendText+'（强度分范围 -10~+10，正分=偏多）</div>';
+  return el;
+}
+
+/* ============ 🤖 AI 多 LLM 投票诊断（v6.4.0）============
+   同 prompt 跑 DeepSeek 3 次（temperature=0.7），取 severity 多数票 + why/advice 汇总去重。
+   借鉴 QuantDinger 的 ensemble voting 思路，但用更便宜的单模型 + 多采样实现。 */
+const AI_KEY_STORAGE = 'fund-ai-key';
+
+// 把"板块现状"翻译成自然语言 prompt（含规则引擎用的所有信号，让 LLM 独立判断）
+function buildAIDiagPrompt(sec, sent, top){
+  const si = sent.si;
+  const flow = sent.flow;
+  const flowYi = flow ? flow.net/1e8 : 0;
+  const topTech = (top || []).filter(d=>d.tech).map((d,i)=>{
+    const t=d.tech;
+    return (i+1)+'. '+d.name+' '+d.code+' | 强度分 '+t.score+' | 乖离'+(t.bias5*100).toFixed(1)+'% | '+(t.crossTag||'中性');
+  }).join('\n') || '无';
+  return [
+    '你是 A 股板块分析专家。请根据以下给出的板块数据，独立判断该板块当前所处的状态。',
+    '',
+    '【板块名称】'+sec.name,
+    '【恐贪指数】'+si.score+'（'+si.label+'）',
+    '【主力资金】'+(flowYi>=0?'净流入':'净流出')+Math.abs(flowYi).toFixed(1)+'亿',
+    '【Top3 代表基金技术面】\n'+topTech,
+    '',
+    '请输出严格 JSON（不要 Markdown 代码块包裹）：',
+    '{"severity":"good|warn|danger|neutral","pattern":"≤10字特征命名","why":["≤3条原因，每条≤50字"],"advice":["≤3条建议"]}',
+    '',
+    'severity 含义：',
+    '  good=机会（可进场/加仓）',
+    '  warn=警惕（减仓/观望）',
+    '  danger=危险（严格止损/不接刀）',
+    '  neutral=观望（信号矛盾，等明确）'
+  ].join('\n');
+}
+
+// 单次调用 DeepSeek（OpenAI 兼容接口）
+async function callDeepSeek(prompt, key){
+  const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method:'POST',
+    headers:{'Authorization':'Bearer '+key, 'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'deepseek-chat',
+      temperature:0.7,
+      max_tokens:800,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!r.ok){
+    const txt = await r.text();
+    throw new Error('HTTP '+r.status+' · '+txt.slice(0,200).replace(/\n/g,' '));
+  }
+  const j = await r.json();
+  return j.choices[0].message.content;
+}
+
+// 容错解析：去掉 markdown ```json 包裹、找出第一个 {...}
+function parseAiJson(text){
+  text = (text||'').trim();
+  // 去掉 markdown 代码块包裹
+  text = text.replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'').trim();
+  const m = text.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error('无法解析 JSON：'+text.slice(0,100));
+  const obj = JSON.parse(m[0]);
+  const validSev = {good:1,warn:1,danger:1,neutral:1};
+  if(!validSev[obj.severity]) obj.severity = 'neutral';
+  if(!obj.pattern || typeof obj.pattern!=='string') obj.pattern = '—';
+  if(!Array.isArray(obj.why)) obj.why = [];
+  if(!Array.isArray(obj.advice)) obj.advice = [];
+  obj.why = obj.why.filter(x=>typeof x==='string' && x.trim()).slice(0,4);
+  obj.advice = obj.advice.filter(x=>typeof x==='string' && x.trim()).slice(0,4);
+  return obj;
+}
+
+// severity 投票：多数票胜出
+function voteSeverity(list){
+  const cnt = {good:0,warn:0,danger:0,neutral:0};
+  list.forEach(x=>{ cnt[x.severity] = (cnt[x.severity]||0)+1; });
+  // 平票时按危险优先（保守原则）：danger > warn > good > neutral
+  const order = ['danger','warn','good','neutral'];
+  let best='neutral', bestN=0;
+  order.forEach(k=>{ if(cnt[k]>bestN){ best=k; bestN=cnt[k]; } });
+  return {best, votes:cnt};
+}
+
+// 主流程：3 次调用 + 投票综合
+async function aiVote(sec, sent, top, key, onProgress){
+  const prompt = buildAIDiagPrompt(sec, sent, top);
+  const rounds = [];
+  for(let i=0;i<3;i++){
+    if(onProgress) onProgress(i+1, '⏳ 询问第 '+(i+1)+'/3 位分析师...');
+    const text = await callDeepSeek(prompt, key);
+    const parsed = parseAiJson(text);
+    rounds.push(parsed);
+  }
+  const {best, votes} = voteSeverity(rounds);
+  // why/advice 去重合并
+  const whyMap = new Map(), advMap = new Map();
+  rounds.forEach(r=>{
+    r.why.forEach(w=>{ const k=w.trim(); if(k && !whyMap.has(k)) whyMap.set(k,1); });
+    r.advice.forEach(a=>{ const k=a.trim(); if(k && !advMap.has(k)) advMap.set(k,1); });
+  });
+  return {
+    severity: best,
+    pattern: rounds[0].pattern,
+    why: Array.from(whyMap.keys()).slice(0,5),
+    advice: Array.from(advMap.keys()).slice(0,5),
+    votes,
+    rounds
+  };
+}
+
+// AI 诊断区块 UI + 交互
+function aiDiagEl(sec, sent, top){
+  const el = document.createElement('div');
+  el.className = 'ai-box';
+  el.id = 'aiDiagBox';
+  el.innerHTML =
+    '<div class="ai-head"><b>🤖 AI 多角度诊断（DeepSeek 投票）</b><span class="ai-progress" id="aiProg">闲置</span></div>' +
+    '<div class="ai-pattern">同 prompt 让 3 位独立分析师各抒己见，去重综合（借鉴 QuantDinger 投票思路）</div>' +
+    '<div class="ai-set">⚙ 配置：' +
+      '<span id="aiKeyStatus">未配置 DeepSeek Key</span> · ' +
+      '<a id="aiKeyEdit">设置</a>' +
+    '</div>' +
+    '<div id="aiKeyBox" style="display:none">' +
+      '<div class="ai-key-row">' +
+        '<input type="password" id="aiKeyInput" placeholder="sk-xxxxxxxx" autocomplete="off">' +
+        '<button class="ai-btn" id="aiKeySave">保存</button>' +
+      '</div>' +
+      '<div class="ai-set">🔒 Key 存在本机 localStorage，不上传第三方；仅你自己用它访问 DeepSeek。申请：<a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a>，新用户通常送 ¥5 免费额度</div>' +
+    '</div>' +
+    '<div style="margin-top:8px"><button class="ai-btn" id="aiStartBtn">🤖 启动投票诊断</button></div>' +
+    '<div id="aiResult" style="display:none"></div>';
+
+  // 事件绑定
+  const $ = (s)=>el.querySelector(s);
+  const keyStatus = $('#aiKeyStatus');
+  const keyEdit = $('#aiKeyEdit');
+  const keyBox = $('#aiKeyBox');
+  const keyInput = $('#aiKeyInput');
+  const keySave = $('#aiKeySave');
+  const startBtn = $('#aiStartBtn');
+  const prog = $('#aiProg');
+  const resultBox = $('#aiResult');
+  let savedKey = localStorage.getItem(AI_KEY_STORAGE) || '';
+  const refreshKeyStatus = ()=>{
+    keyStatus.innerHTML = savedKey ? '✅ DeepSeek Key 已配置（'+savedKey.slice(0,8)+'...）' : '❌ 未配置 DeepSeek Key';
+  };
+  refreshKeyStatus();
+  keyEdit.onclick = ()=>{
+    const open = keyBox.style.display==='block';
+    keyBox.style.display = open?'none':'block';
+    keyInput.value = savedKey || '';
+  };
+  keySave.onclick = ()=>{
+    const k = keyInput.value.trim();
+    if(!k){ alert('请输入 API key'); return; }
+    if(!k.startsWith('sk-')){ if(!confirm('Key 通常以 sk- 开头，确认是 DeepSeek 的 Key 吗？')) return; }
+    savedKey = k;
+    localStorage.setItem(AI_KEY_STORAGE, k);
+    refreshKeyStatus();
+    keyBox.style.display = 'none';
+    alert('✅ 已保存到本地浏览器');
+  };
+  startBtn.onclick = async ()=>{
+    if(!savedKey){ alert('请先点击右上角"设置"配置 DeepSeek Key'); keyBox.style.display='block'; return; }
+    if(!sent){ alert('请等待情绪面数据加载完成'); return; }
+    startBtn.disabled = true;
+    startBtn.textContent = '⏳ 诊断中...';
+    prog.textContent = '准备...';
+    resultBox.style.display = 'none';
+    try{
+      const r = await aiVote(sec, sent, top, savedKey, (n,msg)=>{
+        prog.innerHTML = '<span style="color:#fbbf24">'+msg+'</span>';
+      });
+      prog.innerHTML = '<span style="color:#86efac">✅ 完成 · 总耗时约 5-10 秒</span>';
+      resultBox.style.display = 'block';
+      const sevIcon = {good:'🟢',warn:'🟡',danger:'🔴',neutral:'⚪'};
+      const voteTxt = '🟢好×'+r.votes.good+' · 🟡警×'+r.votes.warn+' · 🔴险×'+r.votes.danger+' · ⚪观×'+r.votes.neutral;
+      resultBox.innerHTML =
+        '<div class="ai-pattern">'+sevIcon[r.severity]+' 综合：'+r.pattern+'</div>' +
+        '<div class="ai-why">📍 综合原因（3 位共识）：' +
+          r.why.map(w=>'<div class="ai-line">· '+w+'</div>').join('') +
+        '</div>' +
+        '<div class="ai-advice">📋 操作建议（合并去重）：' +
+          r.advice.map(a=>'<div class="ai-line">→ '+a+'</div>').join('') +
+        '</div>' +
+        '<div class="ai-vote">🗳 投票：'+voteTxt+'</div>' +
+        '<div class="ai-set">⚠ 与上面"🤖 板块诊断（规则引擎）"对照：规则引擎基于预设模式确定性判断，AI 投票基于 LLM 自然语言推理；两者方向一致更可信。</div>';
+    }catch(e){
+      prog.innerHTML = '<span style="color:#fca5a5">❌ 失败</span>';
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = '<div class="ai-vote" style="color:#fca5a5;line-height:1.7">❌ 调用失败：'+e.message+'<br><br>可能原因：① Key 错误或余额不足 ② 网络问题（可切代理） ③ DeepSeek 服务暂时不可用 ④ 移动端浏览器拦截跨域</div>';
+    }finally{
+      startBtn.disabled = false;
+      startBtn.textContent = '🤖 重新投票';
+    }
+  };
+  return el;
+}
+
 /* ============ 📰 板块资讯渲染（v6.3.6）============ */
 function newsEl(sec, news){
   const el = document.createElement("div");
@@ -1558,12 +1841,17 @@ function renderCards(){
     }
     // 渲染情绪区
     if(sent) box.appendChild(sentimentEl(current, sent));
+    // 📊 技术面汇总看板（v6.4.0）：板块 Top3 基金技术面聚合一览
+    const tsEl = techSummaryEl(top);
+    if(tsEl) box.appendChild(tsEl);
     // 🤖 板块诊断规则引擎（v6.3.5）：基于恐贪+资金+技术面+收益自动诊断
     if(sent){
       const diag = sectorDiagnose(current, sent, top);
       const diagEl_ = diagnoseEl(diag);
       if(diagEl_) box.appendChild(diagEl_);
     }
+    // 🤖 AI 多 LLM 投票诊断（v6.4.0）：默认折叠，点按钮启动
+    box.appendChild(aiDiagEl(current, sent, top));
     // 📰 板块资讯（v6.3.6）：异步拉最新5条新闻，先占位再填充
     // 注意：必须直接保存 placeholder 引用，不能用临时 div 提取（firstElementChild 第二次返回 null）
     const newsPlaceholder = document.createElement("div");
