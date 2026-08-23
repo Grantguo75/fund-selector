@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.4.2 · 热门板块 Top3</title>
+<title>选基助手 v6.4.4 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -55,6 +55,11 @@
   .mini { flex:1; background:#f8fafc; border-radius:9px; padding:7px 8px; text-align:center; }
   .mini .k { font-size:10px; color:var(--sub); }
   .mini .v { font-size:14px; font-weight:700; margin-top:2px; }
+  .holder { margin-top:8px; background:#f1f5f9; border-radius:9px; padding:7px 9px; display:flex; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--sub); }
+  .holder .hb { flex:1; min-width:80px; }
+  .holder .hb .hk { font-size:10px; color:var(--sub); }
+  .holder .hb .hv { font-size:13px; font-weight:700; color:var(--txt); margin-top:1px; }
+  .holder .ins { color:#2563eb; }
   .chart { margin-top:10px; }
   .chart svg { width:100%; height:110px; display:block; }
   .legend { font-size:9px; color:var(--sub); display:flex; gap:8px; margin-top:3px; flex-wrap:wrap; }
@@ -4889,18 +4894,72 @@ async function loadFund(f){
 }
 
 /* ============ v6：候选池实时重排，取当前最强 Top3 ============ */
-// 综合分：近1年为主(60%)、近3年(40%)，最大回撤>30%额外惩罚；全为空返回极小值
+// v6.4.4：排名池从 20 扩到 50，让后录入的基金也有资格进 Top3；
+//   并引入"规模 + 散户/机构占比"质量分（数据源：fundf10 cyrjg 持有人结构接口）
+
+// 加载持有人结构（机构/个人占比 + 总份额），带 7 天本地缓存
+// 接口返回 `var apidata={content:"<table>..."}`，用脚本注入读全局变量 apidata
+function loadHolderStruct(code){
+  const cacheKey = 'fund-holder-'+code;
+  try{
+    const c = JSON.parse(localStorage.getItem(cacheKey)||'null');
+    if(c && Date.now()-c.ts < 7*864e5) return Promise.resolve(c.data);
+  }catch(e){}
+  return new Promise((resolve)=>{
+    const s = document.createElement('script');
+    s.src = 'https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=cyrjg&code='+code;
+    s.onload = ()=>{
+      try{
+        const apidata = window.apidata;
+        const html = apidata && apidata.content ? apidata.content : '';
+        const m = html.match(/<tr><td>([\d-]+)<\/td><td[^>]*>([\d.]+)%<\/td><td[^>]*>([\d.]+)%<\/td><td[^>]*>([\d.]+)%<\/td><td[^>]*>([\d.]+)<\/td><\/tr>/);
+        if(m){
+          const data = { date:m[1], inst:+m[2], person:+m[3], internal:+m[4], totalShareYi:+m[5] };
+          try{ localStorage.setItem(cacheKey, JSON.stringify({ts:Date.now(), data})); }catch(e){}
+          resolve(data);
+        } else resolve(null);
+      }catch(e){ resolve(null); }
+      s.remove();
+    };
+    s.onerror = ()=>{ resolve(null); s.remove(); };
+    (document.head||document.body).appendChild(s);
+  });
+}
+
+// 质量分：规模 + 散户/机构占比
+// 规模：过小(<2亿)清盘风险重扣；适中(10~150亿)最优；过大(>300亿)船大难掉头轻扣
+// 机构占比：5%~70% 适中给正分（有专业认可又不失灵活）；过高(>70%)散户流动性弱轻扣；过低(<5%)几乎无机构认可轻扣
+function qualityScore(d){
+  const ex = d.extra;
+  if(!ex) return 0;
+  let s = 0;
+  const sc = ex.scaleYi||0;
+  if(sc>0){
+    if(sc<2) s-=8;
+    else if(sc<10) s+=2;
+    else if(sc<=150) s+=4;
+    else if(sc<=300) s+=1;
+    else s-=2;
+  }
+  const ir = ex.inst||0;
+  if(ir>=5 && ir<=70) s+=2;
+  else if(ir>70) s-=1;
+  else s-=2;
+  return s;
+}
+
+// 综合分：近1年为主(60%)、近3年(40%)，最大回撤>30%额外惩罚，再叠加规模/机构质量分
 function scoreOf(d){
   if(!d || !d.m || d.m.y1==null) return -1e9;
   const y1 = d.m.y1||0, y3 = d.m.y3||0, mdd = d.m.mdd||0;
   const retScore = y1*0.6 + y3*0.4;
   const riskPenalty = Math.max(0, -mdd - 0.3);
-  return retScore*100 - riskPenalty*40;
+  return retScore*100 - riskPenalty*40 + qualityScore(d)*3;
 }
 // 拉取候选池前 N 只基金净值，算指标，按综合分降序，返回前3
-// 只取前 20 只即可覆盖 Top3 排序，避免全量 40 只串行加载导致首屏过慢
+// v6.4.4：池子扩到 50；去重后补拉持有人结构（规模+机构占比）再排序
 async function rankPool(sec){
-  const pool = (sec.pool || []).slice(0, 20);
+  const pool = (sec.pool || []).slice(0, 50);
   const loaded = [];
   const BATCH = 6; // 控制并发，避免浏览器同域名连接数受限
   for(let i=0;i<pool.length;i+=BATCH){
@@ -4910,6 +4969,22 @@ async function rankPool(sec){
   }
   // v6.3.2：同主体 A/C 份额去重（C 类优先），避免 Top3 里 A、C 同时上榜
   const deduped = dedupeShares(loaded);
+  // v6.4.4：补拉持有人结构 → 算规模（总份额×最新净值）与机构占比
+  for(let i=0;i<deduped.length;i+=BATCH){
+    const batch = deduped.slice(i,i+BATCH);
+    const exs = await Promise.all(batch.map(d=>loadHolderStruct(d.code).catch(()=>null)));
+    batch.forEach((d,idx)=>{
+      const ex = exs[idx];
+      if(ex){
+        const lastNav = (d.series && d.series.length) ? d.series[d.series.length-1].v : 0;
+        d.extra = {
+          inst: ex.inst, person: ex.person, internal: ex.internal,
+          totalShareYi: ex.totalShareYi, date: ex.date,
+          scaleYi: ex.totalShareYi * lastNav
+        };
+      }
+    });
+  }
   deduped.sort((a,b)=> scoreOf(b) - scoreOf(a));
   deduped.forEach((d,idx)=> d._rank = idx+1);
   return deduped.slice(0,3);
@@ -4969,6 +5044,14 @@ function cardEl(d){
       '<div class="mini"><div class="k">近3年</div><div class="v">'+y3+'</div></div>' +
       '<div class="mini"><div class="k">最大回撤</div><div class="v">'+mdd+'</div></div>' +
     '</div>' +
+    (d.extra ? (
+      '<div class="holder">' +
+        '<span class="hk">规模</span><b>'+ (d.extra.scaleYi>=1 ? d.extra.scaleYi.toFixed(1)+'亿' : (d.extra.scaleYi*10000).toFixed(0)+'万') +'</b>' +
+        '<span class="hk">机构</span><b>'+d.extra.inst.toFixed(0)+'%</b>' +
+        '<span class="hk">个人</span><b>'+d.extra.person.toFixed(0)+'%</b>' +
+        '<span class="hnote">数据截至 '+d.extra.date+'</span>' +
+      '</div>'
+    ) : '') +
     '<div class="chart">'+drawChart(d.series)+
       '<div class="legend"><span><i style="background:#f59e0b"></i>MA5</span><span><i style="background:#3b82f6"></i>MA10</span><span><i style="background:#a78bfa"></i>MA20</span><span><i style="background:'+(d.series? (d.series[d.series.length-1].v>=d.series[0].v?'#d92b2b':'#13a05a'):'#999')+'"></i>净值</span></div>'+
     '</div>' +
@@ -5559,7 +5642,7 @@ function renderTabs(){
 function renderCards(){
   const box = $("#cards");
   const title = $("#sectitle");
-  title.innerHTML = current.name + ' <small>同板块实时最强 Top3 · 红涨绿跌</small>';
+  title.innerHTML = current.name + ' <small>同板块实时最强 Top3 · 红涨绿跌 · 按收益+回撤+规模/机构综合排序</small>';
   box.innerHTML = '<div class="loading">正在计算同板块最强 Top3…（首次加载约 5~10 秒）</div>';
   (async()=>{
     try{
