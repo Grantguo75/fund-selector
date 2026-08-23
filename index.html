@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.5.3 · 热门板块 Top3</title>
+<title>选基助手 v6.5.4 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -6275,11 +6275,37 @@ function getCustoms(){
     return v.map(normalizeCustomItem).filter(Boolean);
   }catch(e){ return []; }
 }
+// 清理可再生的缓存，为持仓数据腾出空间（持仓是用户资产，不能丢）
+function clearDisposableCache(){
+  try{
+    const prefixes = ["fs_cache_","fund-holder-","fund-ai-cache-","fs_bk_snap_","_fundSentCache"];
+    for(let i=localStorage.length-1;i>=0;i--){
+      const k = localStorage.key(i);
+      if(!k) continue;
+      if(prefixes.some(p=>k.startsWith(p))) localStorage.removeItem(k);
+    }
+  }catch(e){}
+}
 function saveCustoms(list){
+  let saved = false;
   try{
     const arr = (Array.isArray(list) ? list : []).map(normalizeCustomItem).filter(Boolean);
-    localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr));
+    const raw = JSON.stringify(arr);
+    try{
+      localStorage.setItem(CUSTOM_KEY, raw);
+      saved = true;
+    }catch(e){
+      // 如果是存储空间不足，先清理可再生缓存再试一次
+      if(e && (e.name === "QuotaExceededError" || /quota/i.test(e.message))){
+        clearDisposableCache();
+        localStorage.setItem(CUSTOM_KEY, raw);
+        saved = true;
+      } else {
+        throw e;
+      }
+    }
   }catch(e){}
+  return saved;
 }
 function guessMarket(code){
   // 沪市ETF以51/56/58开头，深市以15/16开头；场外基金返回空
@@ -6450,7 +6476,11 @@ async function addCustom(){
   const item = {code, kind, market, name:code};
   if(cost!=null && shares!=null){ item.cost = cost; item.shares = shares; }
   list0.push(item);
-  saveCustoms(list0);
+  const saved = saveCustoms(list0);
+  if(!saved || getCustoms().length !== list0.length){
+    alert("保存失败：浏览器 localStorage 可能已满。已尝试清理基金缓存，请重试。");
+    return;
+  }
   $("#cusCode").value = "";
   $("#cusCost").value = "";
   $("#cusShares").value = "";
