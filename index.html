@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.5.4 · 热门板块 Top3</title>
+<title>选基助手 v6.5.5 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -6029,9 +6029,9 @@ function summaryBoxHtml(list, ds){
   const items = []; // {name,code,amt,pct,realized,todayPnl}
   list.forEach((item, i)=>{
     const d = ds[i];
-    if(!d) return;
-    const nav = latestNav(d);
-    const todayPct = (d.quote && d.quote.pct!=null) ? d.quote.pct : 0;
+    // v6.5.5：实时数据缺失时，回退到本地缓存净值，保证盈亏框/汇总仍能计算
+    const nav = (d && latestNav(d)!=null) ? latestNav(d) : getNavCache(item.code);
+    const todayPct = (d && d.quote && d.quote.pct!=null) ? d.quote.pct : 0;
     if(item.cost!=null && item.shares!=null && nav!=null){
       const costVal = item.cost * item.shares;
       const nowVal = nav * item.shares;
@@ -6047,7 +6047,7 @@ function summaryBoxHtml(list, ds){
       totalRealized += realized;
       todayPnl += dayPnl;
       items.push({
-        name: d.name || item.code, code: item.code,
+        name: (d && d.name) || item.name || item.code, code: item.code,
         costVal, nowVal, pnl, realized, totalPnl, totalPnlRate,
         todayPct, dayPnl
       });
@@ -6290,13 +6290,26 @@ function getCustoms(){
 // 清理可再生的缓存，为持仓数据腾出空间（持仓是用户资产，不能丢）
 function clearDisposableCache(){
   try{
-    const prefixes = ["fs_cache_","fund-holder-","fund-ai-cache-","fs_bk_snap_","_fundSentCache"];
+    const prefixes = ["fs_cache_","fund-holder-","fund-ai-cache-","fs_bk_snap_","_fundSentCache","fund_nav_"];
     for(let i=localStorage.length-1;i>=0;i--){
       const k = localStorage.key(i);
       if(!k) continue;
       if(prefixes.some(p=>k.startsWith(p))) localStorage.removeItem(k);
     }
   }catch(e){}
+}
+// 最近一次成功的净值缓存：即使实时接口拉取失败，盈亏框也能用本地净值即时计算，
+// 避免"改了成本/份额但盈亏框不刷新/不出现"的问题（v6.5.5）
+function setNavCache(code, nav){
+  try{ if(typeof nav === "number" && !isNaN(nav)) localStorage.setItem("fund_nav_"+code, JSON.stringify({v:nav, ts:Date.now()})); }catch(e){}
+}
+function getNavCache(code){
+  try{
+    const raw = localStorage.getItem("fund_nav_"+code);
+    if(!raw) return null;
+    const o = JSON.parse(raw);
+    return (o && typeof o.v === "number") ? o.v : null;
+  }catch(e){ return null; }
 }
 function saveCustoms(list){
   let saved = false;
@@ -6349,6 +6362,9 @@ async function loadCustomFund(item){
   const f = {code:item.code, name:resolved||item.name||item.code, kind, market, mgr:"自选"};
   const d = await loadFund(f);
   d.name = resolved || d.name || item.name || item.code;
+  // v6.5.5：记录最近一次成功净值，供盈亏框在实时数据缺失时即时计算
+  const _nav = (d && d.series && d.series.length) ? d.series[d.series.length-1].v : null;
+  if(_nav!=null) setNavCache(item.code, _nav);
 
   // 把纠正后的名称/类型写回 localStorage
   if(resolved){
@@ -6568,7 +6584,11 @@ async function refreshCustomList(){
     top.innerHTML += '<span class="del-btn" data-code="'+item.code+'">删除</span>';
     el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
     // 持仓盈亏框（成本/份额已知即可算，不依赖净值）
-    const posHtml = posBoxHtml(item, placeholder, null);
+    // v6.5.5：若本地有缓存净值，占位卡片也立即渲染盈亏框（用缓存净值 + 本地成本/份额），
+    // 不再等实时接口；实时数据回来后会被下面的异步替换覆盖为更准的值。
+    const cn = getNavCache(item.code);
+    const boxD = (cn!=null) ? Object.assign({}, placeholder, {series:[{v:cn, t:Date.now()}]}) : placeholder;
+    const posHtml = posBoxHtml(item, boxD, null);
     if(posHtml){
       const wrap = document.createElement("div");
       wrap.innerHTML = posHtml;
@@ -6754,7 +6774,15 @@ function editPos(item){
     if(isNaN(c)||c<=0||isNaN(s)||s<=0){ alert("请填正数"); return; }
     list[idx].cost = c; list[idx].shares = s;
   }
-  saveCustoms(list);
+  const ok = saveCustoms(list);
+  if(!ok){
+    // 存储空间不足时，saveCustoms 内部已清理过一次缓存，这里再兜底清一次并重试
+    clearDisposableCache();
+    if(!saveCustoms(list)){
+      alert("保存失败：浏览器 localStorage 可能已满。已尝试清理基金缓存，请重试一次。");
+      return;
+    }
+  }
   refreshCustomList();
 }
 
