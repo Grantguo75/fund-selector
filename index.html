@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 · 热门板块 Top3</title>
+<title>选基助手 v6.4.2 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -39,6 +39,9 @@
   .fc-top { display:flex; justify-content:space-between; align-items:flex-start; }
   .fname { font-size:15px; font-weight:700; line-height:1.3; }
   .fcode { font-size:11px; color:var(--sub); margin-top:2px; }
+  .sec-tag { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#6b7280; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px; padding:3px 9px; margin-top:7px; }
+  .sec-tag b { color:#1e293b; font-weight:700; }
+  .sec-tag .sec-score { font-size:10px; color:#4338ca; background:#eef2ff; border-radius:5px; padding:1px 6px; font-weight:700; }
   .badge { display:inline-block; font-size:10px; padding:1px 7px; border-radius:6px; font-weight:600; margin-right:5px; }
   .b-fund { background:#fef3c7; color:#92400e; }
   .b-etf { background:#dbeafe; color:#1e40af; }
@@ -174,7 +177,9 @@
   .summary-box { background:linear-gradient(135deg,#1e293b,#334155); color:#fff; border-radius:14px; padding:14px; margin:0 12px 12px; box-shadow:0 2px 8px rgba(30,41,59,.15); }
   .summary-box.gain { background:linear-gradient(135deg,#991b1b,#dc2626); }
   .summary-box.loss { background:linear-gradient(135deg,#14532d,#16a34a); }
-  .summary-title { font-size:12px; color:rgba(255,255,255,.7); margin-bottom:8px; }
+  .summary-title { font-size:12px; color:rgba(255,255,255,.7); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+  .collapse-btn { background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.3); border-radius:6px; font-size:10px; padding:2px 8px; cursor:pointer; }
+  .collapse-btn:hover { background:rgba(255,255,255,.28); }
   .summary-pnl { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
   .summary-pnl .big { font-size:28px; font-weight:800; }
   .summary-pnl .pct { font-size:14px; font-weight:600; opacity:.9; }
@@ -253,7 +258,7 @@
   .ts-cell.bias .v.mid { color:#6b7280; }
   .ts-trend { font-size:11px; color:#0c4a6e; padding:7px 9px; background:rgba(255,255,255,.55); border-radius:8px; line-height:1.6; }
   .ts-trend b { color:#075985; font-size:12px; }
-  /* AI 投票诊断（v6.4.0） */
+  /* AI 投票诊断（v6.4.3 · A+D 优化：单次调用3票模拟 + 当日缓存） */
   .ai-box { background:#1e1b4b; color:#e0e7ff; border-radius:12px; padding:12px 14px; margin:0 12px 10px; border:1px solid #4338ca; }
   .ai-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
   .ai-head b { font-size:13px; color:#fbbf24; }
@@ -359,241 +364,265 @@ const SECTORS = [
       {
         "code": "007300",
         "name": "国联安中证半导体ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007301",
         "name": "国联安中证半导体ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008281",
         "name": "国泰CES半导体芯片行业ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008282",
         "name": "国泰CES半导体芯片行业ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022497",
         "name": "国泰CES半导体芯片行业ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012969",
         "name": "鹏华国证半导体芯片ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012970",
         "name": "鹏华国证半导体芯片ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008887",
         "name": "华夏国证半导体芯片ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008888",
         "name": "华夏国证半导体芯片ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012629",
         "name": "广发国证半导体芯片ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012630",
         "name": "广发国证半导体芯片ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020670",
         "name": "易方达科创芯片ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020671",
         "name": "易方达科创芯片ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021607",
         "name": "南方上证科创板芯片ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021224",
         "name": "华宝上证科创板芯片ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021608",
         "name": "南方上证科创板芯片ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021225",
         "name": "华宝上证科创板芯片ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022725",
         "name": "博时上证科创板芯片ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022726",
         "name": "博时上证科创板芯片ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017559",
         "name": "华安上证科创板芯片ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017560",
         "name": "华安上证科创板芯片ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017469",
         "name": "嘉实上证科创板芯片ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020628",
         "name": "汇添富科创芯片ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017470",
         "name": "嘉实上证科创板芯片ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020629",
         "name": "汇添富科创芯片ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023651",
         "name": "富国上证科创板芯片ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023652",
         "name": "富国上证科创板芯片ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018411",
         "name": "易方达芯片ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018412",
         "name": "易方达芯片ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024854",
         "name": "国泰上证科创板芯片ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024853",
         "name": "国泰上证科创板芯片ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026623",
         "name": "招商上证科创板芯片设计主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026622",
         "name": "招商上证科创板芯片设计主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027609",
         "name": "鹏华上证科创板芯片设计主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027521",
         "name": "广发科创芯片设计ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027520",
         "name": "广发科创芯片设计ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027608",
         "name": "鹏华上证科创板芯片设计主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027575",
         "name": "天弘上证科创板芯片设计主题ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027574",
         "name": "天弘上证科创板芯片设计主题ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027607",
         "name": "易方达上证科创板芯片设计主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "025209",
+        "name": "永赢先锋半导体智选混合发起C",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "025500",
+        "name": "东方阿尔法科技智选混合发起C",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "011949",
+        "name": "东吴多策略混合C",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "020470",
+        "name": "长城半导体混合发起式C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -616,145 +645,151 @@ const SECTORS = [
       {
         "code": "020639",
         "name": "广发半导体设备ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021893",
         "name": "易方达半导体设备ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019632",
         "name": "国泰半导体设备ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020640",
         "name": "广发半导体设备ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021894",
         "name": "易方达半导体设备ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019633",
         "name": "国泰半导体设备ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024974",
         "name": "华泰柏瑞上证科创板半导体材料设备主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024975",
         "name": "华泰柏瑞上证科创板半导体材料设备主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023828",
         "name": "万家中证半导体材料设备主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023829",
         "name": "万家中证半导体材料设备主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020356",
         "name": "华夏半导体材料设备ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020357",
         "name": "华夏半导体材料设备ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024417",
         "name": "华夏上证科创板半导体材料设备主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024418",
         "name": "华夏上证科创板半导体材料设备主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020464",
         "name": "招商中证半导体产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020465",
         "name": "招商中证半导体产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021532",
         "name": "天弘半导体设备指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021533",
         "name": "天弘半导体设备指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021718",
         "name": "华泰紫金中证半导体产业指数型发起A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021719",
         "name": "华泰紫金中证半导体产业指数型发起C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024069",
         "name": "上银中证半导体产业指数发起式A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024070",
         "name": "上银中证半导体产业指数发起式C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020839",
         "name": "南方中证半导体产业指数发起A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020840",
         "name": "南方中证半导体产业指数发起C",
-        "kind": "指数型-股票",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "017811",
+        "name": "东方人工智能主题混合C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -777,34 +812,34 @@ const SECTORS = [
       {
         "code": "008989",
         "name": "大成科技创新混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012617",
         "name": "东吴新经济混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "006503",
         "name": "财通集成电路产业股票C",
-        "kind": "股票型",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021528",
         "name": "财通成长优选混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024593",
         "name": "圆信永丰科技驱动混合发起C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       }
-      ]
+    ]
   },
   {
     "name": "CPO",
@@ -824,40 +859,40 @@ const SECTORS = [
       {
         "code": "011892",
         "name": "易方达先锋成长混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011412",
         "name": "易方达远见成长混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501201",
         "name": "红土创新科技创新股票(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025881",
         "name": "汇添富科技领先混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "540010",
         "name": "汇丰晋信科技先锋股票",
-        "kind": "股票型",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016874",
         "name": "广发远见智选混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       }
-      ]
+    ]
   },
   {
     "name": "MLCC",
@@ -877,28 +912,28 @@ const SECTORS = [
       {
         "code": "015060",
         "name": "华夏节能环保股票C",
-        "kind": "股票型",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025793",
         "name": "东方阿尔法科技甄选混合发起C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013274",
         "name": "长城优化升级混合C",
-        "kind": "混合型-偏股",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001042",
         "name": "华夏领先股票",
-        "kind": "股票型",
+        "kind": "fund",
         "mgr": ""
       }
-      ]
+    ]
   },
   {
     "name": "人工智能/云计算",
@@ -919,241 +954,241 @@ const SECTORS = [
       {
         "code": "023407",
         "name": "华宝创业板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023408",
         "name": "华宝创业板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024662",
         "name": "富国创业板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024663",
         "name": "富国创业板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "161631",
         "name": "融通人工智能指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008020",
         "name": "华富中证人工智能产业ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009239",
         "name": "融通人工智能指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008021",
         "name": "华富中证人工智能产业ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011839",
         "name": "天弘中证人工智能主题ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011840",
         "name": "天弘中证人工智能主题ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008585",
         "name": "华夏人工智能ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012733",
         "name": "易方达中证人工智能主题ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012734",
         "name": "易方达中证人工智能主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008586",
         "name": "华夏人工智能ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021580",
         "name": "华夏人工智能ETF联接D",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023384",
         "name": "平安中证人工智能主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024610",
         "name": "平安中证人工智能主题ETF发起式联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023385",
         "name": "平安中证人工智能主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023564",
         "name": "易方达科创人工智能ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023565",
         "name": "易方达科创人工智能ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024560",
         "name": "华宝上证科创板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024763",
         "name": "富国上证科创板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023550",
         "name": "银华上证科创板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024245",
         "name": "广发上证科创板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023552",
         "name": "银华上证科创板人工智能ETF发起式联接I",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024764",
         "name": "富国上证科创板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024561",
         "name": "华宝上证科创板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023551",
         "name": "银华上证科创板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024246",
         "name": "广发上证科创板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023520",
         "name": "博时上证科创板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023521",
         "name": "博时上证科创板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024409",
         "name": "鑫元上证科创板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024410",
         "name": "鑫元上证科创板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024875",
         "name": "嘉实上证科创板人工智能ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024412",
         "name": "华夏上证科创板人工智能ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025505",
         "name": "华夏创业板人工智能ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025506",
         "name": "华夏创业板人工智能ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024411",
         "name": "华夏上证科创板人工智能ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025106",
         "name": "南方上证科创板人工智能ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025105",
         "name": "南方上证科创板人工智能ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -1177,241 +1212,253 @@ const SECTORS = [
       {
         "code": "018167",
         "name": "国泰有色矿业ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018168",
         "name": "国泰有色矿业ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022083",
         "name": "华安中证有色金属矿业主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017192",
         "name": "天弘中证工业有色金属主题ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022084",
         "name": "华安中证有色金属矿业主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017193",
         "name": "天弘中证工业有色金属主题ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160221",
         "name": "国泰国证有色金属行业指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015596",
         "name": "国泰国证有色金属行业指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016707",
         "name": "华夏有色金属ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018489",
         "name": "万家中证工业有色金属主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016708",
         "name": "华夏有色金属ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021534",
         "name": "华夏有色金属ETF联接D",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018490",
         "name": "万家中证工业有色金属主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021296",
         "name": "鹏华国证有色金属行业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021297",
         "name": "鹏华国证有色金属行业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "004432",
         "name": "南方有色金属ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "010990",
         "name": "南方有色金属ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019164",
         "name": "汇添富有色金属ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "004433",
         "name": "南方有色金属ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019165",
         "name": "汇添富有色金属ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017140",
         "name": "华宝中证有色金属ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017141",
         "name": "华宝中证有色金属ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007910",
         "name": "大成有色金属期货ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007911",
         "name": "大成有色金属期货ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026445",
         "name": "易方达中证细分有色金属产业主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026458",
         "name": "银华中证有色金属ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026459",
         "name": "银华中证有色金属ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026444",
         "name": "易方达中证细分有色金属产业主题ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026477",
         "name": "招商中证有色金属矿业主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026478",
         "name": "招商中证有色金属矿业主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027703",
         "name": "泰康中证有色金属矿业主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027704",
         "name": "泰康中证有色金属矿业主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027597",
         "name": "景顺长城中证有色金属矿业主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027596",
         "name": "景顺长城中证有色金属矿业主题ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027542",
         "name": "富国中证工业有色金属主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027543",
         "name": "富国中证工业有色金属主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028670",
         "name": "易方达中证工业有色金属主题ETF联接发起式A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028671",
         "name": "易方达中证工业有色金属主题ETF联接发起式C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021673",
         "name": "国泰黄金股ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021674",
         "name": "国泰黄金股ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "002207",
+        "name": "前海开源金银珠宝混合C",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "002963",
+        "name": "易方达黄金ETF联接C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -1435,49 +1482,49 @@ const SECTORS = [
       {
         "code": "023638",
         "name": "国泰A股电网设备ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023639",
         "name": "国泰A股电网设备ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025857",
         "name": "华夏中证电网设备主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025856",
         "name": "华夏中证电网设备主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025832",
         "name": "天弘电网设备特高压指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025833",
         "name": "天弘电网设备特高压指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028700",
         "name": "招商恒生A股电网设备指数发起式A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028701",
         "name": "招商恒生A股电网设备指数发起式C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -1501,175 +1548,175 @@ const SECTORS = [
       {
         "code": "020095",
         "name": "富国中证绿色电力ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020096",
         "name": "富国中证绿色电力ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018172",
         "name": "华泰柏瑞中证电力全指ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018173",
         "name": "华泰柏瑞中证电力全指ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019058",
         "name": "易方达绿色电力ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017481",
         "name": "博时中证全指电力ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018734",
         "name": "华夏中证绿色电力ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019059",
         "name": "易方达绿色电力ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016185",
         "name": "广发电力ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018735",
         "name": "华夏中证绿色电力ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017482",
         "name": "博时中证全指电力ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016186",
         "name": "广发电力ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017174",
         "name": "天弘国证绿色电力ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017175",
         "name": "天弘国证绿色电力ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021752",
         "name": "南方电力ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021753",
         "name": "南方电力ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017056",
         "name": "嘉实国证绿色电力ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017057",
         "name": "嘉实国证绿色电力ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018034",
         "name": "国泰国证绿色电力ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018035",
         "name": "国泰国证绿色电力ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026949",
         "name": "华宝中证全指电力公用事业ETF发起式联接",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028389",
         "name": "汇添富中证全指电力公用事业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028390",
         "name": "汇添富中证全指电力公用事业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019592",
         "name": "嘉实中证国新央企现代能源ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021922",
         "name": "博时中证国新央企现代能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019593",
         "name": "嘉实中证国新央企现代能源ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021923",
         "name": "博时中证国新央企现代能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026702",
         "name": "泰康中证全指电力公用事业指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026701",
         "name": "泰康中证全指电力公用事业指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -1692,241 +1739,247 @@ const SECTORS = [
       {
         "code": "021701",
         "name": "国泰上证国企红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025200",
         "name": "景顺长城国证港股通红利低波动率ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021702",
         "name": "国泰上证国企红利ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025201",
         "name": "景顺长城国证港股通红利低波动率ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021044",
         "name": "国泰香港国企红利ETF联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501227",
         "name": "泓德红利优选混合(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024218",
         "name": "融通中证诚通央企红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021045",
         "name": "国泰香港国企红利ETF联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024219",
         "name": "融通中证诚通央企红利ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022520",
         "name": "泓德红利优选混合(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023162",
         "name": "银河上证国有企业红利ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023163",
         "name": "银河上证国有企业红利ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012761",
         "name": "华泰柏瑞上证红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012762",
         "name": "华泰柏瑞上证红利ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020466",
         "name": "华泰柏瑞中证中央企业红利ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016440",
         "name": "华夏中证红利质量ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020467",
         "name": "华泰柏瑞中证中央企业红利ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022887",
         "name": "华宝标普港股通低波红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016441",
         "name": "华夏中证红利质量ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024263",
         "name": "华夏中证红利质量ETF发起式联接D",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022888",
         "name": "华宝标普港股通低波红利ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021099",
         "name": "博时中证红利ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021100",
         "name": "博时中证红利ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022274",
         "name": "国泰港股红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022275",
         "name": "国泰港股红利ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021243",
         "name": "富国中证中央企业红利ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009051",
         "name": "易方达中证红利ETF联接发起式A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022925",
         "name": "易方达中证红利ETF联接发起式Y",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501029",
         "name": "华宝标普中国A股红利机会ETF联接A(LOF)",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021244",
         "name": "富国中证中央企业红利ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009052",
         "name": "易方达中证红利ETF联接发起式C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012643",
         "name": "招商中证红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012644",
         "name": "招商中证红利ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021399",
         "name": "广发中证红利ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "005125",
         "name": "华宝标普中国A股红利机会ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018387",
         "name": "华泰柏瑞港股通红利ETF联接基金A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021400",
         "name": "广发中证红利ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022663",
         "name": "华泰柏瑞港股通红利ETF联接基金I",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018388",
         "name": "华泰柏瑞港股通红利ETF联接基金C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019259",
         "name": "国泰富时国企红利ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "021561",
+        "name": "天弘中证央企红利50指数发起A",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -1950,175 +2003,187 @@ const SECTORS = [
       {
         "code": "502003",
         "name": "易方达中证军工(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012842",
         "name": "易方达中证军工(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "163115",
         "name": "申万菱信中证军工指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016209",
         "name": "申万菱信中证军工指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160643",
         "name": "鹏华空天军工指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "010364",
         "name": "鹏华空天军工指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "003017",
         "name": "广发中证军工ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "005693",
         "name": "广发中证军工ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "161024",
         "name": "富国中证军工指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013035",
         "name": "富国中证军工指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501019",
         "name": "国泰国证航天军工指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015599",
         "name": "国泰国证航天军工指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025732",
         "name": "华安国证航天航空行业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025733",
         "name": "华安国证航天航空行业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028090",
         "name": "天弘国证航天航空行业ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028091",
         "name": "天弘国证航天航空行业ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024194",
         "name": "永赢国证商用卫星通信产业ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024195",
         "name": "永赢国证商用卫星通信产业ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160630",
         "name": "鹏华中证国防指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012041",
         "name": "鹏华中证国防指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "164402",
         "name": "前海开源中航军工指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "000596",
         "name": "前海开源中证军工指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015046",
         "name": "前海开源中航军工指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "002199",
         "name": "前海开源中证军工指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024748",
         "name": "博时中证卫星产业指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025490",
         "name": "平安中证卫星产业指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025491",
         "name": "平安中证卫星产业指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024749",
         "name": "博时中证卫星产业指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026544",
         "name": "平安中证卫星产业指数E",
-        "kind": "指数型-股票",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "011592",
+        "name": "博时军工主题股票C",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "010052",
+        "name": "长城久嘉创新成长混合C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -2140,241 +2205,241 @@ const SECTORS = [
       {
         "code": "000373",
         "name": "华安中证细分医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "000376",
         "name": "华安中证细分医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "006756",
         "name": "国泰中证生物医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011040",
         "name": "天弘国证生物医药ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008154",
         "name": "嘉实中证医药健康100策略ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012801",
         "name": "富国中证医药50ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "006757",
         "name": "国泰中证生物医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011041",
         "name": "天弘国证生物医药ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022498",
         "name": "国泰中证生物医药ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008155",
         "name": "嘉实中证医药健康100策略ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012802",
         "name": "富国中证医药50ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "161726",
         "name": "招商国证生物医药指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012417",
         "name": "招商国证生物医药指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "163118",
         "name": "申万菱信中证申万医药生物指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015176",
         "name": "申万菱信中证申万医药生物指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001344",
         "name": "易方达医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007883",
         "name": "易方达医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007076",
         "name": "汇添富中证医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007077",
         "name": "汇添富中证医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001180",
         "name": "广发医药卫生联接A",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "002978",
         "name": "广发医药卫生联接C",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160635",
         "name": "鹏华中证医药指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "010366",
         "name": "鹏华中证医药指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019598",
         "name": "平安中证港股医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018557",
         "name": "易方达港股通医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024544",
         "name": "平安中证港股医药ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019599",
         "name": "平安中证港股医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018558",
         "name": "易方达港股通医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021060",
         "name": "嘉实上证科创板生物医药ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021061",
         "name": "嘉实上证科创板生物医药ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021088",
         "name": "鹏华中证港股通医药卫生ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021089",
         "name": "鹏华中证港股通医药卫生ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024733",
         "name": "鹏华上证科创板生物医药ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024732",
         "name": "鹏华上证科创板生物医药ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024982",
         "name": "国泰创业板医药ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024983",
         "name": "国泰创业板医药ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027142",
         "name": "华夏上证科创板生物医药ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027143",
         "name": "华夏上证科创板生物医药ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501005",
         "name": "汇添富中证精准医疗指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501006",
         "name": "汇添富中证精准医疗指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -2397,241 +2462,241 @@ const SECTORS = [
       {
         "code": "164212",
         "name": "天弘全球新能源汽车股票(QDII-LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016823",
         "name": "天弘全球新能源汽车股票(QDII-LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024419",
         "name": "华夏创业板新能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024420",
         "name": "华夏创业板新能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013179",
         "name": "广发国证新能源车电池ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013180",
         "name": "广发国证新能源车电池ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019315",
         "name": "易方达中证新能源ETF联接发起式A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019316",
         "name": "易方达中证新能源ETF联接发起式C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009067",
         "name": "国泰中证新能源汽车ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019855",
         "name": "博时中证新能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009068",
         "name": "国泰中证新能源汽车ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022482",
         "name": "国泰中证新能源汽车ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019856",
         "name": "博时中证新能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013013",
         "name": "华夏中证新能源汽车ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "161028",
         "name": "富国中证新能源汽车指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012831",
         "name": "南方中证新能源ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019090",
         "name": "博时中证新能源汽车ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013048",
         "name": "富国中证新能源汽车指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013014",
         "name": "华夏中证新能源汽车ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024629",
         "name": "华夏中证新能源汽车ETF发起式联接D",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012832",
         "name": "南方中证新能源ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019091",
         "name": "博时中证新能源汽车ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501057",
         "name": "汇添富中证新能源汽车产业指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501058",
         "name": "汇添富中证新能源汽车产业指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013319",
         "name": "华安中证新能源汽车ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013320",
         "name": "华安中证新能源汽车ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "164905",
         "name": "交银国证新能源指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013453",
         "name": "交银国证新能源指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023851",
         "name": "富国上证科创板新能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023852",
         "name": "富国上证科创板新能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023075",
         "name": "鹏华上证科创板新能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023076",
         "name": "鹏华上证科创板新能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025362",
         "name": "国泰创业板新能源ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025916",
         "name": "兴银国证新能源车电池ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025917",
         "name": "兴银国证新能源车电池ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "025363",
         "name": "国泰创业板新能源ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026527",
         "name": "鹏华创业板新能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026526",
         "name": "鹏华创业板新能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026816",
         "name": "富国创业板新能源ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026817",
         "name": "富国创业板新能源ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -2656,61 +2721,61 @@ const SECTORS = [
       {
         "code": "015873",
         "name": "工银锂电池ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015874",
         "name": "工银锂电池ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019087",
         "name": "工银中证稀有金属主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019088",
         "name": "工银中证稀有金属主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014110",
         "name": "嘉实中证稀有金属主题ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014111",
         "name": "嘉实中证稀有金属主题ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019874",
         "name": "广发稀有金属ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019875",
         "name": "广发稀有金属ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013942",
         "name": "华宝中证稀有金属指数增强发起A",
-        "kind": "指数增强型",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013943",
         "name": "华宝中证稀有金属指数增强发起C",
-        "kind": "指数增强型",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -2733,241 +2798,241 @@ const SECTORS = [
       {
         "code": "018577",
         "name": "摩根恒生科技ETF发起式联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018578",
         "name": "摩根恒生科技ETF发起式联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013127",
         "name": "汇添富恒生科技ETF联接发起式(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013308",
         "name": "易方达恒生科技ETF联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013128",
         "name": "汇添富恒生科技ETF联接发起式(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020988",
         "name": "南方恒生科技ETF发起联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013309",
         "name": "易方达恒生科技ETF联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020989",
         "name": "南方恒生科技ETF发起联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014438",
         "name": "博时恒生科技ETF发起式联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015310",
         "name": "华泰柏瑞恒生科技ETF联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013402",
         "name": "华夏恒生科技ETF发起式联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012804",
         "name": "广发恒生科技ETF联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012979",
         "name": "大成恒生科技ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014439",
         "name": "博时恒生科技ETF发起式联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012348",
         "name": "天弘恒生科技ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022680",
         "name": "华泰柏瑞恒生科技ETF联接(QDII)I",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023763",
         "name": "华夏恒生科技ETF发起式联接(QDII)D",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012805",
         "name": "广发恒生科技ETF联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015311",
         "name": "华泰柏瑞恒生科技ETF联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012349",
         "name": "天弘恒生科技ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013403",
         "name": "华夏恒生科技ETF发起式联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015282",
         "name": "华安恒生科技ETF发起式联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022647",
         "name": "华安恒生科技ETF发起式联接(QDII)I",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012980",
         "name": "大成恒生科技ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015283",
         "name": "华安恒生科技ETF发起式联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027765",
         "name": "嘉实恒生科技ETF发起联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027766",
         "name": "嘉实恒生科技ETF发起联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024037",
         "name": "银华港股科技30联接A",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024039",
         "name": "银华港股科技30联接I",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024038",
         "name": "银华港股科技30联接C",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024886",
         "name": "天弘港股科技ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024885",
         "name": "天弘港股科技ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024042",
         "name": "富国恒生A股专精特新企业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024043",
         "name": "富国恒生A股专精特新企业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014519",
         "name": "博时恒生高股息率ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014520",
         "name": "博时恒生高股息率ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023222",
         "name": "鹏华恒生中国央企ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "023223",
         "name": "鹏华恒生中国央企ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017610",
         "name": "华夏恒生港股通中国内地企业高股息率ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017611",
         "name": "华夏恒生港股通中国内地企业高股息率ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -2991,211 +3056,211 @@ const SECTORS = [
       {
         "code": "011966",
         "name": "招商中证光伏产业ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014604",
         "name": "嘉实中证光伏产业ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014605",
         "name": "嘉实中证光伏产业ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011967",
         "name": "招商中证光伏产业ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017646",
         "name": "易方达中证光伏产业ETF联接发起式A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017647",
         "name": "易方达中证光伏产业ETF联接发起式C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021084",
         "name": "鹏华中证光伏产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013601",
         "name": "国泰中证光伏产业ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021085",
         "name": "鹏华中证光伏产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012885",
         "name": "华夏中证光伏产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012928",
         "name": "银华中证光伏ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013602",
         "name": "国泰中证光伏产业ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021698",
         "name": "国泰中证光伏产业ETF发起联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012886",
         "name": "华夏中证光伏产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012929",
         "name": "银华中证光伏ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015993",
         "name": "博时中证光伏产业ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012679",
         "name": "华泰柏瑞光伏ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012680",
         "name": "华泰柏瑞光伏ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015994",
         "name": "博时中证光伏产业ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024059",
         "name": "汇添富中证光伏产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024060",
         "name": "汇添富中证光伏产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026721",
         "name": "平安中证光伏产业ETF联接发起式C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026720",
         "name": "平安中证光伏产业ETF联接发起式A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012364",
         "name": "广发中证光伏产业指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012365",
         "name": "广发中证光伏产业指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012722",
         "name": "平安中证光伏产业指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024618",
         "name": "平安中证光伏产业指数E",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012723",
         "name": "平安中证光伏产业指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019531",
         "name": "南方中证光伏产业指数发起A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011102",
         "name": "天弘中证光伏产业指数A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019532",
         "name": "南方中证光伏产业指数发起C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "011103",
         "name": "天弘中证光伏产业指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "026754",
         "name": "华宝中证光伏产业指数发起",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013816",
         "name": "汇添富中证光伏产业指数增强发起式A",
-        "kind": "指数增强型",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013817",
         "name": "汇添富中证光伏产业指数增强发起式C",
-        "kind": "指数增强型",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -3218,241 +3283,247 @@ const SECTORS = [
       {
         "code": "161725",
         "name": "招商中证白酒指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012414",
         "name": "招商中证白酒指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160127",
         "name": "南方新兴消费增长股票(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160144",
         "name": "南方新兴消费增长股票(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008975",
         "name": "富国中证消费50ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008976",
         "name": "富国中证消费50ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001133",
         "name": "广发中证全指可选消费联接A",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "002977",
         "name": "广发中证全指可选消费联接C",
-        "kind": "其他",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "217017",
         "name": "招商上证消费80ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "004407",
         "name": "招商上证消费80ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501090",
         "name": "华宝中证消费龙头ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021365",
         "name": "华夏中证全指可选消费ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009329",
         "name": "华宝中证消费龙头ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021366",
         "name": "华夏中证全指可选消费ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017832",
         "name": "华夏中证港股通消费主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018103",
         "name": "易方达中证港股通消费主题ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016952",
         "name": "鹏华中证港股通消费ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017833",
         "name": "华夏中证港股通消费主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016953",
         "name": "鹏华中证港股通消费ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018104",
         "name": "易方达中证港股通消费主题ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024189",
         "name": "华泰柏瑞恒生消费ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024190",
         "name": "华泰柏瑞恒生消费ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019102",
         "name": "景顺长城恒生消费ETF联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "501089",
         "name": "方正富邦消费红利指数增强(LOF)",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019103",
         "name": "景顺长城恒生消费ETF联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018200",
         "name": "嘉实恒生消费ETF发起联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020743",
         "name": "广发恒生消费ETF发起式联接(QDII)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "018201",
         "name": "嘉实恒生消费ETF发起联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020744",
         "name": "广发恒生消费ETF发起式联接(QDII)C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009179",
         "name": "嘉实中证主要消费ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009180",
         "name": "嘉实中证主要消费ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "000248",
         "name": "汇添富中证主要消费ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012857",
         "name": "汇添富中证主要消费ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001631",
         "name": "天弘中证食品饮料ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001632",
         "name": "天弘中证食品饮料ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160222",
         "name": "国泰国证食品饮料行业(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015040",
         "name": "国泰国证食品饮料行业(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012548",
         "name": "华宝中证细分食品饮料产业主题ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012549",
         "name": "华宝中证细分食品饮料产业主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013125",
         "name": "华夏食品饮料ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "016550",
+        "name": "永赢消费龙头智选混合发起C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -3476,186 +3547,191 @@ const SECTORS = [
       {
         "code": "019279",
         "name": "嘉实中证大农业ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "019280",
         "name": "嘉实中证大农业ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "010769",
         "name": "天弘中证农业主题ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "010770",
         "name": "天弘中证农业主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015878",
         "name": "富国中证农业主题ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015879",
         "name": "富国中证农业主题ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016077",
         "name": "华夏中证农业主题ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016078",
         "name": "华夏中证农业主题ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024273",
         "name": "华夏中证农业主题ETF发起式联接D",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020650",
         "name": "博时国证粮食产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021086",
         "name": "鹏华国证粮食产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "020651",
         "name": "博时国证粮食产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021087",
         "name": "鹏华国证粮食产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027762",
         "name": "广发国证粮食产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027761",
         "name": "广发国证粮食产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014414",
         "name": "招商中证畜牧养殖ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014415",
         "name": "招商中证畜牧养殖ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012724",
         "name": "国泰中证畜牧养殖ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "012725",
         "name": "国泰中证畜牧养殖ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022475",
         "name": "国泰中证畜牧养殖ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027191",
         "name": "天弘中证畜牧养殖产业ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027192",
         "name": "天弘中证畜牧养殖产业ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027710",
         "name": "汇添富中证畜牧养殖产业ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027711",
         "name": "汇添富中证畜牧养殖产业ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028551",
         "name": "招商国证粮食产业指数发起式A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "028552",
         "name": "招商国证粮食产业指数发起式C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027288",
         "name": "富国中证畜牧养殖产业指数发起式C",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "027287",
         "name": "富国中证畜牧养殖产业指数发起式A",
-        "kind": "指数型-股票",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "001027",
         "name": "前海开源中证大农业指数增强A",
-        "kind": "指数增强型",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "015484",
         "name": "前海开源中证大农业指数增强C",
-        "kind": "指数增强型",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "001195",
+        "name": "工银农业产业股票",
+        "kind": "fund",
         "mgr": ""
       }
     ]
   },
-
   {
     "name": "沪深300",
     "kind": "broad",
@@ -3674,241 +3750,247 @@ const SECTORS = [
       {
         "code": "017996",
         "name": "万家沪深300成长ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "017997",
         "name": "万家沪深300成长ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "166802",
         "name": "浙商沪深300指数增强(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "014372",
         "name": "浙商沪深300指数增强(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021847",
         "name": "国泰沪深300增强策略ETF发起联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021848",
         "name": "国泰沪深300增强策略ETF发起联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "003876",
         "name": "华宝沪深300增强策略ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "007404",
         "name": "华宝沪深300增强策略ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "165515",
         "name": "中信保诚沪深300指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013120",
         "name": "中信保诚沪深300指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022504",
         "name": "招商沪深300ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022505",
         "name": "招商沪深300ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "165310",
         "name": "建信沪深300指数增强(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021254",
         "name": "富国沪深300ESG基准ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160807",
         "name": "长盛沪深300指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "009208",
         "name": "建信沪深300指数增强(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021255",
         "name": "富国沪深300ESG基准ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021494",
         "name": "长盛沪深300指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021832",
         "name": "富国沪深300ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021833",
         "name": "富国沪深300ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024367",
         "name": "华宝沪深300自由现金流ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "165309",
         "name": "建信沪深300指数(LOF)",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008390",
         "name": "国联安沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022599",
         "name": "博时沪深300ETF发起式联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024368",
         "name": "华宝沪深300自由现金流ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "000613",
         "name": "国寿安保沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008391",
         "name": "国联安沪深300ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "021103",
         "name": "国寿安保沪深300ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022600",
         "name": "博时沪深300ETF发起式联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022924",
         "name": "南方沪深300ETF联接Y",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "202015",
         "name": "南方沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "110020",
         "name": "易方达沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022928",
         "name": "易方达沪深300ETF联接Y",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022955",
         "name": "天弘沪深300ETF联接Y",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "000961",
         "name": "天弘沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "160615",
         "name": "鹏华沪深300ETF联接(LOF)A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "460300",
         "name": "华泰柏瑞沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022948",
         "name": "华泰柏瑞沪深300ETF联接Y",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "024613",
         "name": "摩根沪深300自由现金流ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "000051",
         "name": "华夏沪深300ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "673101",
+        "name": "西部利得沪深300指数增强C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -3932,55 +4014,95 @@ const SECTORS = [
       {
         "code": "161724",
         "name": "招商中证煤炭等权指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013596",
         "name": "招商中证煤炭等权指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008279",
         "name": "国泰中证煤炭ETF联接A",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "008280",
         "name": "国泰中证煤炭ETF联接C",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "022501",
         "name": "国泰中证煤炭ETF联接E",
-        "kind": "指数型-股票(ETF联接)",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "168204",
         "name": "国联中证煤炭指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "161032",
         "name": "富国中证煤炭指数(LOF)A",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "013275",
         "name": "富国中证煤炭指数(LOF)C",
-        "kind": "指数型-LOF",
+        "kind": "fund",
         "mgr": ""
       },
       {
         "code": "016814",
         "name": "国联中证煤炭指数C",
-        "kind": "指数型-股票",
+        "kind": "fund",
+        "mgr": ""
+      }
+    ]
+  },
+  {
+    "name": "海外基金",
+    "kind": "overseas",
+    "bk": [
+      "HK"
+    ],
+    "boss": {
+      "name": "QDII·海外配置",
+      "fund": "华安纳斯达克100ETF联接(QDII)",
+      "style": "海外资产·分散A股风险",
+      "ret": "跟踪美股/全球指数",
+      "note": "海外基金（QDII）用于分散A股单一市场风险，覆盖美股纳斯达克/标普500/全球高端制造/移动互联等。注意汇率风险与申赎时滞（QDII 确认净值通常 T+2，赎回到账更慢）。"
+    },
+    "pool": [
+      {
+        "code": "016665",
+        "name": "天弘全球高端制造混合(QDII)C",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "002891",
+        "name": "华夏移动互联混合人民币",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "008401",
+        "name": "大成标普500等权重指数(QDII)C人民币",
+        "kind": "fund",
+        "mgr": ""
+      },
+      {
+        "code": "014978",
+        "name": "华安纳斯达克100ETF联接(QDII)C",
+        "kind": "fund",
         "mgr": ""
       }
     ]
@@ -4009,7 +4131,8 @@ function sectorNewsKeyword(name){
     "白酒消费":"白酒 消费 食品饮料",
     "粮食":"粮食 农业 养殖 种业",
     "沪深300":"沪深300 大盘",
-    "煤炭":"煤炭 动力煤 焦煤"
+    "煤炭":"煤炭 动力煤 焦煤",
+    "海外基金":"海外 QDII 美股 纳斯达克 标普500 全球"
   };
   return map[name] || name;
 }
@@ -4036,6 +4159,7 @@ const _SECTOR_KEYWORDS = [
   ["医药|医疗|生物科技|健康", ["医药"]],
   ["新能源|锂电池|新能源汽车|碳中和|环保新能源", ["新能源"]],
   ["恒生科技|港股科技|海外中国互联网", ["恒生科技"]],
+  ["QDII|纳斯达克|标普|道琼斯|全球|境外", ["海外基金"]],
   ["光伏", ["光伏"]],
   ["白酒|消费|食品饮料|主要消费", ["白酒消费"]],
   ["农业|粮食|畜牧|养殖|大农业", ["粮食"]],
@@ -5064,12 +5188,14 @@ function techSummaryEl(top){
   return el;
 }
 
-/* ============ 🤖 AI 多 LLM 投票诊断（v6.4.0）============
-   同 prompt 跑 DeepSeek 3 次（temperature=0.7），取 severity 多数票 + why/advice 汇总去重。
-   借鉴 QuantDinger 的 ensemble voting 思路，但用更便宜的单模型 + 多采样实现。 */
+/* ============ 🤖 AI 多 LLM 投票诊断（v6.4.3）============
+   v6.4.3(A): 单次 DeepSeek 调用，prompt 内要求模型模拟 3 位分析师（多头/谨慎/风控）
+   各自判断 + 综合投票，单次 API 顶原 3 次，费用降到约 1/3。
+   v6.4.3(D): 同板块当天 localStorage 缓存，重复诊断命中缓存零花费。
+   借鉴 QuantDinger / ensemble voting 思路，但用更便宜的单模型 + 多角色单采样实现。 */
 const AI_KEY_STORAGE = 'fund-ai-key';
 
-// 把"板块现状"翻译成自然语言 prompt（含规则引擎用的所有信号，让 LLM 独立判断）
+// v6.4.3(A): 单次调用，让模型内部模拟 3 位分析师（多头/谨慎/风控）各自判断 + 综合投票
 function buildAIDiagPrompt(sec, sent, top){
   const si = sent.si;
   const flow = sent.flow;
@@ -5079,7 +5205,7 @@ function buildAIDiagPrompt(sec, sent, top){
     return (i+1)+'. '+d.name+' '+d.code+' | 强度分 '+t.score+' | 乖离'+(t.bias5*100).toFixed(1)+'% | '+(t.crossTag||'中性');
   }).join('\n') || '无';
   return [
-    '你是 A 股板块分析专家。请根据以下给出的板块数据，独立判断该板块当前所处的状态。',
+    '你是 A 股板块分析专家。请让 3 位不同视角的分析师（①多头视角 ②谨慎视角 ③风控视角）各自独立判断该板块当前状态，最后由你综合出多数意见。',
     '',
     '【板块名称】'+sec.name,
     '【恐贪指数】'+si.score+'（'+si.label+'）',
@@ -5087,7 +5213,14 @@ function buildAIDiagPrompt(sec, sent, top){
     '【Top3 代表基金技术面】\n'+topTech,
     '',
     '请输出严格 JSON（不要 Markdown 代码块包裹）：',
-    '{"severity":"good|warn|danger|neutral","pattern":"≤10字特征命名","why":["≤3条原因，每条≤50字"],"advice":["≤3条建议"]}',
+    '{',
+    '  "panel":[',
+    '    {"role":"多头","severity":"good|warn|danger|neutral","why":["≤2条原因,每条≤40字"],"advice":["≤2条建议,每条≤40字"]},',
+    '    {"role":"谨慎","severity":"good|warn|danger|neutral","why":["≤2条原因"],"advice":["≤2条建议"]},',
+    '    {"role":"风控","severity":"good|warn|danger|neutral","why":["≤2条原因"],"advice":["≤2条建议"]}',
+    '  ],',
+    '  "final":{"severity":"多数票胜出(平票按危险优先)","pattern":"≤10字特征命名","why":["≤3条综合原因"],"advice":["≤3条建议"]}',
+    '}',
     '',
     'severity 含义：',
     '  good=机会（可进场/加仓）',
@@ -5146,30 +5279,35 @@ function voteSeverity(list){
   return {best, votes:cnt};
 }
 
-// 主流程：3 次调用 + 投票综合
+// 主流程：v6.4.3(A) 单次调用 + 模型内部 3 分析师投票综合
 async function aiVote(sec, sent, top, key, onProgress){
   const prompt = buildAIDiagPrompt(sec, sent, top);
-  const rounds = [];
-  for(let i=0;i<3;i++){
-    if(onProgress) onProgress(i+1, '⏳ 询问第 '+(i+1)+'/3 位分析师...');
-    const text = await callDeepSeek(prompt, key);
-    const parsed = parseAiJson(text);
-    rounds.push(parsed);
-  }
-  const {best, votes} = voteSeverity(rounds);
-  // why/advice 去重合并
+  if(onProgress) onProgress(1, '⏳ 询问 3 位分析师（单次调用）...');
+  const text = await callDeepSeek(prompt, key);
+  const parsed = parseAiJson(text);
+  const validSev = {good:1,warn:1,danger:1,neutral:1};
+  const panel = Array.isArray(parsed.panel) ? parsed.panel : [];
+  // 从 panel 投票（归一到合法 severity）
+  const {best, votes} = voteSeverity(panel.map(p=>({
+    severity: (p && validSev[p.severity]) ? p.severity : 'neutral'
+  })));
+  const finalObj = parsed.final || {};
+  const finalSev = (finalObj.severity && validSev[finalObj.severity]) ? finalObj.severity : best;
+  // why/advice 去重合并（panel + final）
   const whyMap = new Map(), advMap = new Map();
-  rounds.forEach(r=>{
-    r.why.forEach(w=>{ const k=w.trim(); if(k && !whyMap.has(k)) whyMap.set(k,1); });
-    r.advice.forEach(a=>{ const k=a.trim(); if(k && !advMap.has(k)) advMap.set(k,1); });
+  panel.forEach(p=>{
+    (p.why||[]).forEach(w=>{ const k=w.trim(); if(k && !whyMap.has(k)) whyMap.set(k,1); });
+    (p.advice||[]).forEach(a=>{ const k=a.trim(); if(k && !advMap.has(k)) advMap.set(k,1); });
   });
+  (finalObj.why||[]).forEach(w=>{ const k=w.trim(); if(k && !whyMap.has(k)) whyMap.set(k,1); });
+  (finalObj.advice||[]).forEach(a=>{ const k=a.trim(); if(k && !advMap.has(k)) advMap.set(k,1); });
   return {
-    severity: best,
-    pattern: rounds[0].pattern,
+    severity: finalSev,
+    pattern: finalObj.pattern || (panel[0] && panel[0].pattern) || '—',
     why: Array.from(whyMap.keys()).slice(0,5),
     advice: Array.from(advMap.keys()).slice(0,5),
     votes,
-    rounds
+    rounds: panel
   };
 }
 
@@ -5180,7 +5318,7 @@ function aiDiagEl(sec, sent, top){
   el.id = 'aiDiagBox';
   el.innerHTML =
     '<div class="ai-head"><b>🤖 AI 多角度诊断（DeepSeek 投票）</b><span class="ai-progress" id="aiProg">闲置</span></div>' +
-    '<div class="ai-pattern">同 prompt 让 3 位独立分析师各抒己见，去重综合（借鉴 QuantDinger 投票思路）</div>' +
+    '<div class="ai-pattern">单次 API 调用，模型内部模拟 3 位分析师（多头/谨慎/风控）各自判断后投票综合（ensemble voting 思路）。比原 3 次调用省约 2/3 费用；同板块当天重复诊断命中本地缓存、零花费。</div>' +
     '<div class="ai-set">⚙ 配置：' +
       '<span id="aiKeyStatus">未配置 DeepSeek Key</span> · ' +
       '<a id="aiKeyEdit">设置</a>' +
@@ -5190,7 +5328,7 @@ function aiDiagEl(sec, sent, top){
         '<input type="password" id="aiKeyInput" placeholder="sk-xxxxxxxx" autocomplete="off">' +
         '<button class="ai-btn" id="aiKeySave">保存</button>' +
       '</div>' +
-      '<div class="ai-set">🔒 Key 存在本机 localStorage，不上传第三方；仅你自己用它访问 DeepSeek。申请：<a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a>（官方已无新用户赠送额度，需充值 ¥1 起；一次投票约 ¥0.003，¥1 可用 300+ 次）。想免费可改用硅基流动 siliconflow.cn（注册常送额度，兼容 OpenAI 格式）</div>' +
+      '<div class="ai-set">🔒 Key 存在本机 localStorage，不上传第三方；仅你自己用它访问 DeepSeek。申请：<a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a>（官方已无新用户赠送额度，需充值 ¥1 起；一次投票约 ¥0.001，¥1 可用 1000+ 次）。想免费可改用硅基流动 siliconflow.cn（注册常送额度，兼容 OpenAI 格式）</div>' +
     '</div>' +
     '<div style="margin-top:8px"><button class="ai-btn" id="aiStartBtn">🤖 启动投票诊断</button></div>' +
     '<div id="aiResult" style="display:none"></div>';
@@ -5256,19 +5394,86 @@ function aiDiagEl(sec, sent, top){
       resultBox.innerHTML = '<div class="ai-vote" style="color:#fca5a5;line-height:1.7">❌ 调用失败：'+e.message+'<br><br>可能原因：① Key 错误或余额不足 ② 网络问题（可切代理） ③ DeepSeek 服务暂时不可用 ④ 移动端浏览器拦截跨域</div>';
     }finally{
       startBtn.disabled = false;
-      startBtn.textContent = '🤖 重新投票';
+      startBtn.textContent = '🤖 重新投票（清缓存）';
     }
   };
   return el;
 }
 
 /* ============ 📰 板块资讯（拉取 + 渲染）============ */
-/* v1.4.2: getSectorNews 之前缺失导致 cards 区一直报错
-   临时返回空数组，让 newsEl 走"暂无新闻"分支
-   TODO: 接东财快讯/华尔街见闻 RSS 等免费源 */
-async function getSectorNews(keyword, count){
-  // const url = "https://np-listapi.eastmoney.com/comm/web/getListInfo?client=web&biz=web_news_col&column=345&page_size="+count+"&keyword="+encodeURIComponent(keyword);
-  return [];
+/* v6.4.2: 改接东方财富「search-api JSONP」新闻接口（type=20 返回 CMSArticle），
+   与你添加的 skill 方案一致：每打开一个板块，用 sectorNewsKeyword 映射的关键词
+   拉最新 5 条媒体新闻。若新闻为空/失败，自动回退到原来的「成分股公告」通道。
+   港股/海外(bk=["HK"])也走新闻关键词搜索，不再直接返回空。 */
+
+// 通过东方财富 search-api 拉关键词新闻（type=20 → CMSArticle）
+async function getSearchNews(keyword, count){
+  if(!keyword) return [];
+  const url = "https://searchapi.eastmoney.com/api/suggest/get?input=" + encodeURIComponent(keyword) + "&type=20&count=" + Math.max(count || 5, 10);
+  const d = await jsonpGet(url);
+  const items = (d && d.CMSArticle && d.CMSArticle.Data) || [];
+  return items.map(it=>{
+    const title = (it.title || "").replace(/<\/?em>/gi, "");
+    const content = (it.content || "").replace(/<\/?em>/gi, "");
+    return {
+      date: it.date || "",
+      media: it.mediaName || "东方财富",
+      title: title,
+      url: "https://finance.eastmoney.com/a/" + (it.code || "") + ".html",
+      content: content
+    };
+  }).filter(x=>x.title).slice(0, count || 5);
+}
+
+// 备用：通过成分股公告拉资讯（原 v6.4.1 逻辑保留）
+async function getSectorAnnouncements(sec, count){
+  const bks = (sec && sec.bk) || [];
+  if(!bks.length || bks[0] === "HK") return [];
+  const stockCodes = new Set();
+  for(const bk of bks.slice(0, 2)){
+    try{
+      const url = "https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=30&fid=f12&fs=b:" + bk + "&fields=f12,f14";
+      const d = await jsonpGet(url);
+      const arr = d && d.data && d.data.diff ? (Array.isArray(d.data.diff)?d.data.diff:Object.values(d.data.diff)) : [];
+      arr.forEach(it=>{ if(it.f12 && /^\d{6}$/.test(it.f12)) stockCodes.add(it.f12); });
+    }catch(e){ /* 单个 BK 失败忽略 */ }
+    if(stockCodes.size >= 20) break;
+  }
+  if(!stockCodes.size) return [];
+  const list = [...stockCodes].slice(0, 15).join(",");
+  const annUrl = "https://np-anotice-stock.eastmoney.com/api/security/ann?sr=-1&page_size=30&page_index=1&ann_type=A&client_source=web&f_node=0&s_node=0&stock_list=" + encodeURIComponent(list);
+  const ad = await jsonpGet(annUrl);
+  const items = (ad && ad.data && ad.data.list) || [];
+  const out = [], seen = new Set();
+  items.forEach(it=>{
+    if(seen.has(it.art_code)) return;
+    seen.add(it.art_code);
+    const stock = (it.codes && it.codes[0]) || {};
+    const col = (it.columns && it.columns[0] && it.columns[0].column_name) || "公告";
+    const date = it.eiTime || it.notice_date || it.display_time || "";
+    out.push({
+      date: date,
+      media: (stock.short_name || "") + "·" + col,
+      title: it.title || it.title_ch || col,
+      url: "https://data.eastmoney.com/notices/stock/" + (stock.stock_code || "") + ".html",
+      content: col
+    });
+  });
+  out.sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+  return out.slice(0, count || 5);
+}
+
+async function getSectorNews(sec, count){
+  try{
+    // 1) 优先走 search-api 关键词新闻（与 skill 方案一致）
+    const kw = sectorNewsKeyword(sec && sec.name);
+    const news = await getSearchNews(kw, count);
+    if(news && news.length) return news;
+    // 2) 新闻为空则回退公告通道
+    return await getSectorAnnouncements(sec, count);
+  }catch(e){
+    return [];
+  }
 }
 
 function newsEl(sec, news){
@@ -5384,7 +5589,7 @@ function renderCards(){
     }
     // 🤖 AI 多 LLM 投票诊断（v6.4.0）：默认折叠，点按钮启动
     box.appendChild(aiDiagEl(current, sent, top));
-    // 📰 板块资讯（v6.3.6）：异步拉最新5条新闻，先占位再填充
+    // 📰 板块资讯（v6.4.2）：改接 search-api JSONP 关键词新闻，异步拉最新5条，先占位再填充
     // 注意：必须直接保存 placeholder 引用，不能用临时 div 提取（firstElementChild 第二次返回 null）
     const newsPlaceholder = document.createElement("div");
     newsPlaceholder.className = "news-box";
@@ -5395,8 +5600,8 @@ function renderCards(){
       if(newsPlaceholder.parentNode){
         newsPlaceholder.innerHTML = '<div class="news-empty" style="padding:14px">📰 资讯加载超时<br><span style="font-size:10px">接口可能限流，点"↻ 刷新"重试</span></div>';
       }
-    }, 6000);
-    getSectorNews(sectorNewsKeyword(current.name), 5).then(news=>{
+    }, 9000);
+    getSectorNews(current, 5).then(news=>{
       clearTimeout(newsTimer);
       if(!newsPlaceholder.parentNode) return; // 已不在 DOM 里（用户切换了板块）
       const newEl = newsEl(current, news || []);
@@ -5744,7 +5949,7 @@ function summaryBoxHtml(list, ds){
   const summaryCls = totalPnlAll >= 0 ? "gain" : "loss";
   const summary =
     '<div class="summary-box '+summaryCls+'">' +
-      '<div class="summary-title">📊 持仓汇总 · 共 '+items.length+' 只</div>' +
+      '<div class="summary-title">📊 持仓汇总 · 共 '+items.length+' 只<button class="collapse-btn" id="rankCollapse">收起 ▾</button></div>' +
       '<div class="summary-pnl">' +
         '<span class="big">'+(totalPnlAll>=0?"+":"-")+fmt(Math.abs(totalPnlAll))+'</span>' +
         '<span class="pct">'+(totalPnlRate*100>=0?"+":"")+(totalPnlRate*100).toFixed(2)+'%</span>' +
@@ -5759,7 +5964,7 @@ function summaryBoxHtml(list, ds){
     '</div>';
   // 亏损排序：按总盈亏率从低到高（亏得多的排前面）
   items.sort((a,b)=> a.totalPnlRate - b.totalPnlRate);
-  let rankHtml = '<div class="rank-box">';
+  let rankHtml = '<div class="rank-box" id="rankBox">';
   rankHtml += '<div class="rank-head">📉 亏损程度排序 <small>从亏得多到亏得少（或赚）</small></div>';
   items.forEach((it, idx)=>{
     const cls_ = it.totalPnl >= 0 ? "up" : "down";
@@ -5987,7 +6192,7 @@ function renderCustom(){
   const box = $("#custom"); box.innerHTML = "";
   const bar = document.createElement("div");
   bar.className = "cbar";
-  bar.innerHTML = '<button class="favbtn" id="cusBack">← 返回板块</button><span style="font-size:12px;color:var(--sub)">输入你实际持有的基金 + 成本 + 份额，自动算盈亏并给止损/止盈线</span>';
+  bar.innerHTML = '<button class="favbtn" id="cusBack">← 返回板块</button><button class="favbtn" id="cusDemo" style="border-color:#16a34a;color:#16a34a">📋 一键填示例</button><span style="font-size:12px;color:var(--sub)">输入代码+成本+份额 → 自动算盈亏+止损/止盈线·<b>没填过点右侧按钮先看效果</b></span>';
   box.appendChild(bar);
 
   const form = document.createElement("div");
@@ -6034,6 +6239,7 @@ function renderCustom(){
     box.classList.add("hidden"); box.innerHTML="";
     $("#tabs").classList.remove("hidden"); $("#sectitle").classList.remove("hidden"); $("#cards").classList.remove("hidden");
   };
+  $("#cusDemo").onclick = ()=> fillDemoPositions();
   $("#cusAdd").onclick = ()=>addCustom();
   $("#cusCode").addEventListener("keydown", (e)=>{ if(e.key==="Enter") addCustom(); });
 
@@ -6079,6 +6285,21 @@ function renderCustom(){
 
   refreshCustomList();
 }
+
+/* 一键填示例持仓：演示用，覆盖当前持仓。
+   3 只覆盖电力/白酒/半导体三个板块，附带合理成本+份额+已实现盈亏，
+   让"持仓汇总卡 + 写损排序表"立刻可见（避免用户填表前看不到效果） */
+function fillDemoPositions(){
+  if(getCustoms().length && !confirm("已有持仓数据，将被示例覆盖。是否继续？")) return;
+  const demo = [
+    {code:"019593", kind:"fund", market:"", cost:1.100, shares:10000, realized:-100, note:"嘉实央企能源（电力）"},
+    {code:"161725", kind:"fund", market:"", cost:1.500, shares:5000,  realized:0,    note:"招商白酒（白酒）"},
+    {code:"007300", kind:"fund", market:"", cost:1.200, shares:8000,  realized:0,    note:"国联安半导体（半导体）"}
+  ];
+  saveCustoms(demo);
+  refreshCustomList();
+}
+
 async function addCustom(){
   const code = $("#cusCode").value.trim();
   if(!/^\d{6}$/.test(code)){ alert("请输入6位基金代码"); return; }
@@ -6158,6 +6379,14 @@ async function refreshCustomList(){
     const top = el.querySelector(".fc-top div:first-child");
     top.innerHTML += '<span class="del-btn" data-code="'+d.code+'">删除</span>';
     el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
+    // 加板块标签（v6.3.5：让用户知道恐贪值/止损止盈来自哪个板块）
+    const secLabel = fundSent && fundSent.sector ? fundSent.sector : (fundSent && fundSent.fallback ? fundSent.fallback : '未归类');
+    const secTag = document.createElement("div");
+    secTag.className = "sec-tag";
+    secTag.innerHTML = '📌 归属板块：<b>'+secLabel+'</b>' + (fundSent && fundSent.score!=null ? '<span class="sec-score">恐贪 '+fundSent.score+'</span>' : '');
+    const todayEl = el.querySelector(".today");
+    if(todayEl && todayEl.parentNode === el){ el.insertBefore(secTag, todayEl); }
+    else { el.appendChild(secTag); }
     // 追加持仓盈亏 + 止损止盈框
     const posHtml = posBoxHtml(item, d, fundSent);
     if(posHtml){
@@ -6176,15 +6405,30 @@ async function refreshCustomList(){
     holder.appendChild(el);
   });
 
-  // 持仓汇总 + 亏损排序（v6.3.8）
+  // 持仓汇总 + 亏损排序（v6.3.8 / v6.3.3 排序表移到汇总下方 + 收起按钮）
   const sumResult = summaryBoxHtml(list, ds);
   if(sumResult.summary){
     // 替换顶部占位
     const oldSummary = box.querySelector(".summary-box");
     if(oldSummary) oldSummary.outerHTML = sumResult.summary;
-    // 排序表追加到列表后面
+    // 排序表插到汇总卡正下方（卡片列表上方）
     if(sumResult.rank){
-      holder.insertAdjacentHTML("afterend", sumResult.rank);
+      const newSummary = box.querySelector(".summary-box");
+      if(newSummary) newSummary.insertAdjacentHTML("afterend", sumResult.rank);
+    }
+    // 绑定"收起/展开"按钮
+    const collapseBtn = box.querySelector("#rankCollapse");
+    const rankBoxEl = box.querySelector("#rankBox");
+    if(collapseBtn && rankBoxEl){
+      collapseBtn.onclick = function(){
+        if(rankBoxEl.style.display === "none"){
+          rankBoxEl.style.display = "";
+          collapseBtn.textContent = "收起 ▾";
+        } else {
+          rankBoxEl.style.display = "none";
+          collapseBtn.textContent = "展开 ▸";
+        }
+      };
     }
   } else {
     // 没有持仓数据（都没填成本份额），移除占位
