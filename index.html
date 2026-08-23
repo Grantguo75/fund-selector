@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.4.4 · 热门板块 Top3</title>
+<title>选基助手 v6.4.5 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -6400,26 +6400,45 @@ async function addCustom(){
   // 二者要么都填、要么都不填
   if((cost!=null) !== (shares!=null)){ alert("成本净值和持有份额需同时填写，或同时留空（仅观察）"); return; }
 
-  // 添加前先解析真实名称并自动纠正类型（防止股基同号或类型选错，如 002207 实际是场外基金）
-  const resolved = await resolveFundName(code, market, kind).catch(()=>null);
-  if(resolved){
-    const inferred = inferKind(resolved);
-    if(inferred && inferred !== kind){
-      kind = inferred;
-      market = (kind === "etf" ? guessMarket(code) : "");
-    }
-  }
+  // 先查重，避免白等网络
+  const list0 = getCustoms();
+  if(list0.some(x=>x.code===code)){ alert("该基金已在持仓列表"); return; }
 
-  const list = getCustoms();
-  if(list.some(x=>x.code===code)){ alert("该基金已在持仓列表"); return; }
-  const item = {code, kind, market, name:resolved||code};
+  // 立即保存 + 刷新列表（name 先用代码占位），保证点击有即时反馈
+  const item = {code, kind, market, name:code};
   if(cost!=null && shares!=null){ item.cost = cost; item.shares = shares; }
-  list.push(item);
-  saveCustoms(list);
+  list0.push(item);
+  saveCustoms(list0);
   $("#cusCode").value = "";
   $("#cusCost").value = "";
   $("#cusShares").value = "";
   refreshCustomList();
+
+  // 异步解析真实名称 + 纠正类型（不阻塞点击；回来后更新名称并刷新）
+  // 整体加 2.5s 超时：东财 searchapi/push2 在部分网络下很慢，超时即放弃名称解析（已有代码占位）
+  const nameP = Promise.race([
+    resolveFundName(code, market, kind),
+    new Promise(r=>setTimeout(()=>r(null), 2500))
+  ]);
+  nameP
+    .then(resolved=>{
+      if(!resolved) return;
+      const inferred = inferKind(resolved);
+      let nk = kind, nm = market;
+      if(inferred && inferred !== kind){
+        nk = inferred;
+        nm = (inferred === "etf" ? guessMarket(code) : "");
+      }
+      const list = getCustoms();
+      const t = list.find(x=>x.code===code);
+      if(t){
+        t.name = resolved;
+        t.kind = nk; t.market = nm;
+        saveCustoms(list);
+        refreshCustomList();
+      }
+    })
+    .catch(()=>{}); // 名称解析失败无所谓，已有代码占位
 }
 function removeCustom(code){
   let list = getCustoms().filter(x=>x.code!==code);
