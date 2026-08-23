@@ -4397,6 +4397,27 @@ function getNorthFlow(){
   }).catch(()=>null);
 }
 
+/* 全局情绪缓存：getSentimentForFund 兜底分支会读 _sentCache.breadth / .north */
+const _sentCache = { breadth: null, north: null };
+/* 板块情绪聚合：拉板块资金 + 市场广度 + 北向 → 合成恐贪指数
+   返回 { flow, si, north, breadth }，供 sentimentEl() 渲染 */
+async function loadSentiment(sec){
+  // 并行拉三路，单路失败不影响整体
+  const [flow, breadth, north] = await Promise.all([
+    sec && sec.bk && sec.bk.length ? getSectorFlow(sec.bk).catch(()=>null) : Promise.resolve(null),
+    getMarketBreadth().catch(()=>null),
+    getNorthFlow().catch(()=>null)
+  ]);
+  if(breadth) _sentCache.breadth = breadth;
+  if(north) _sentCache.north = north;
+  const si = sentimentIndex({
+    sectorNet: flow ? flow.net : null,
+    marketLimitUp: breadth ? breadth.limitUp : null,
+    northNet: north ? (north.south + north.north) : null
+  });
+  return { flow, si, north, breadth };
+}
+
 /* 恐贪指数合成：0~100，越高越贪婪（偏买）；越低越恐惧（偏卖）
    输入：sectorNet(板块主力净额,元)、marketLimitUp(涨停家数)、northNet(北向净额,元)
    权重：板块资金 50% + 市场广度 30% + 北向 20% */
@@ -4763,9 +4784,36 @@ async function rankPool(sec){
     const ds = await Promise.all(batch.map(f=>loadFund(f).catch(()=>null)));
     ds.forEach(d=>{ if(d && d.series && d.series.length>=30) loaded.push(d); });
   }
-  loaded.sort((a,b)=> scoreOf(b) - scoreOf(a));
-  loaded.forEach((d,idx)=> d._rank = idx+1);
-  return loaded.slice(0,3);
+  // v6.3.2：同主体 A/C 份额去重（C 类优先），避免 Top3 里 A、C 同时上榜
+  const deduped = dedupeShares(loaded);
+  deduped.sort((a,b)=> scoreOf(b) - scoreOf(a));
+  deduped.forEach((d,idx)=> d._rank = idx+1);
+  return deduped.slice(0,3);
+}
+
+/* 基金份额去重：同一只基金常有 A/C/E 等多个份额（净值走势几乎一致），
+   Top3 里应只保留一个份额。优先级：C > A > E > B > I > Y > D > R > H > O > X。
+   原因：C 类免申购费、持有 7 天免赎回费，最适合散户波段操作；A 类适合长期持有。 */
+const _SHARE_PRIORITY = { "C":0, "A":1, "E":2, "B":3, "I":4, "Y":5, "D":6, "R":7, "H":8, "O":9, "X":10 };
+function dedupeShares(list){
+  const seen = {}; // baseName -> { index, rank }
+  const out = [];
+  for(const d of list){
+    const name = d.name || "";
+    const m = name.match(/^(.+?)([A-Z])$/);
+    const isShare = !!m && Object.prototype.hasOwnProperty.call(_SHARE_PRIORITY, m[2]);
+    const key = isShare ? m[1] : name;
+    const rank = isShare ? _SHARE_PRIORITY[m[2]] : 100;
+    if(!Object.prototype.hasOwnProperty.call(seen, key)){
+      seen[key] = { index: out.length, rank };
+      out.push(d);
+    } else if(rank < seen[key].rank){
+      // 当前份额优先级更高（如 C 替换 A），替换掉之前存的
+      out[seen[key].index] = d;
+      seen[key].rank = rank;
+    }
+  }
+  return out;
 }
 
 /* ============ 渲染卡片 ============ */
@@ -5214,7 +5262,15 @@ function aiDiagEl(sec, sent, top){
   return el;
 }
 
-/* ============ 📰 板块资讯渲染（v6.3.6）============ */
+/* ============ 📰 板块资讯（拉取 + 渲染）============ */
+/* v1.4.2: getSectorNews 之前缺失导致 cards 区一直报错
+   临时返回空数组，让 newsEl 走"暂无新闻"分支
+   TODO: 接东财快讯/华尔街见闻 RSS 等免费源 */
+async function getSectorNews(keyword, count){
+  // const url = "https://np-listapi.eastmoney.com/comm/web/getListInfo?client=web&biz=web_news_col&column=345&page_size="+count+"&keyword="+encodeURIComponent(keyword);
+  return [];
+}
+
 function newsEl(sec, news){
   const el = document.createElement("div");
   el.className = "news-box";
@@ -5301,11 +5357,12 @@ function renderCards(){
   title.innerHTML = current.name + ' <small>同板块实时最强 Top3 · 红涨绿跌</small>';
   box.innerHTML = '<div class="loading">正在计算同板块最强 Top3…（首次加载约 5~10 秒）</div>';
   (async()=>{
+    try{
     box.innerHTML = "";
     if(current.boss) box.appendChild(bossEl(current));
     // 情绪面 + 候选池排名 并行拉取，减少等待
     const [sent, top] = await Promise.all([
-      loadSentiment(current).catch(()=>null),
+      loadSentiment(current).catch(e=>{ console.warn("loadSentiment err", e); return null; }),
       rankPool(current)
     ]);
     if(!top.length){
@@ -5361,6 +5418,10 @@ function renderCards(){
     for(const d of top){
       try{ box.appendChild(cardEl(d)); }
       catch(e){ /* 单卡异常不影响其余 */ }
+    }
+    }catch(e){
+      console.error("renderCards err", e);
+      box.innerHTML = '<div class="disc" style="border-left:3px solid #d92b2b"><b>渲染异常</b>：'+(e&&e.message||e)+'<br><span style="font-size:11px;opacity:.7">控制台 F12 查看详情；点"↻ 刷新"重试</span></div>';
     }
   })();
 }
