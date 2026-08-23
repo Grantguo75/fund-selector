@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.5.2 · 热门板块 Top3</title>
+<title>选基助手 v6.5.3 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -6251,7 +6251,8 @@ const CUSTOM_KEY = "fund_selector_custom_v1";
 // cost/shares/realized 是数字或 null，剔除非法条目
 function normalizeCustomItem(x){
   if(!x || typeof x !== "object") return null;
-  let code = (x.code != null) ? String(x.code).trim() : "";
+  // 兼容云端可能把 code 存成数字：转字符串后 padStart(6,'0')，避免 7300 被误判为 4 位非法
+  let code = (x.code != null) ? String(x.code).replace(/\D/g,"").padStart(6,"0").slice(-6) : "";
   if(!/^\d{6}$/.test(code)) return null;
   let kind = (x.kind === "etf") ? "etf" : "fund";
   let market = (typeof x.market === "string") ? x.market : "";
