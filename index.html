@@ -6212,7 +6212,13 @@ async function readFromGist(gistId){
   const file = data.files && data.files[GIST_FILENAME];
   if(!file) throw new Error("Gist 中无 "+GIST_FILENAME+" 文件");
   const content = file.content || "[]";
-  return JSON.parse(content);
+  let arr = JSON.parse(content);
+  // 容错：云端内容若被双重 JSON 化（字符串形式），再解一层
+  if(typeof arr === "string"){ try{ arr = JSON.parse(arr); }catch(e){ arr = []; } }
+  if(!Array.isArray(arr)) throw new Error("云端数据格式错误（非数组）");
+  // 过滤脏条目：只保留含有效 6 位 code 的对象，避免脏数据拖垮后续逻辑
+  arr = arr.filter(x=> x && typeof x === "object" && typeof x.code === "string" && /^\d{6}$/.test(x.code));
+  return arr;
 }
 // 写 Gist：PATCH /gists/{id}，需 token
 async function writeToGist(gistId, token, positions){
@@ -6241,8 +6247,18 @@ async function writeToGist(gistId, token, positions){
 
 /* ============ 自选对比模块 ============ */
 const CUSTOM_KEY = "fund_selector_custom_v1";
-function getCustoms(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY)||"[]"); }catch(e){ return []; } }
-function saveCustoms(list){ localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); }
+function getCustoms(){
+  try{
+    const raw = localStorage.getItem(CUSTOM_KEY);
+    if(!raw) return [];
+    let v = JSON.parse(raw);
+    // 容错：若存的是字符串（如云端双重 JSON 化的脏数据），尝试再解一层；仍非数组则复位为空
+    if(typeof v === "string"){ try{ v = JSON.parse(v); }catch(e){ v = []; } }
+    if(!Array.isArray(v)) v = [];
+    return v;
+  }catch(e){ return []; }
+}
+function saveCustoms(list){ try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(Array.isArray(list)?list:[])); }catch(e){} }
 function guessMarket(code){
   // 沪市ETF以51/56/58开头，深市以15/16开头；场外基金返回空
   const c = code.slice(0,2);
@@ -6387,6 +6403,7 @@ function renderCustom(){
 }
 
 async function addCustom(){
+ try{
   const code = $("#cusCode").value.trim();
   if(!/^\d{6}$/.test(code)){ alert("请输入6位基金代码"); return; }
   const type = $("#cusType").value;
@@ -6442,6 +6459,9 @@ async function addCustom(){
       }
     })
     .catch(()=>{}); // 名称解析失败无所谓，已有代码占位
+  } catch(e){
+    alert("添加失败：" + (e && e.message ? e.message : e));
+  }
 }
 function removeCustom(code){
   let list = getCustoms().filter(x=>x.code!==code);
