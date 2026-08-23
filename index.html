@@ -3986,6 +3986,7 @@ const SECTORS = [
     ]
   }
 ];
+let current = SECTORS[0];
 // 板块名 → 新闻搜索关键词映射（用于 getSectorNews）
 function sectorNewsKeyword(name){
   const map = {
@@ -4088,6 +4089,21 @@ function $(s){ return document.querySelector(s); }
 function pct(n){ return (n>=0?"+":"") + (n*100).toFixed(2) + "%"; }
 function cls(n){ return n>=0 ? "up" : "down"; }
 
+/* ============ 本地缓存（减少重复请求，TTL 5 分钟） ============ */
+function _cacheKey(code){ return "fs_cache_" + code; }
+function getFundCache(code){
+  try{
+    const raw = localStorage.getItem(_cacheKey(code));
+    if(!raw) return null;
+    const obj = JSON.parse(raw);
+    if(!obj || Date.now() - obj.ts > 5*60*1000) return null;
+    return obj.data;
+  }catch(e){ return null; }
+}
+function setFundCache(code, data){
+  try{ localStorage.setItem(_cacheKey(code), JSON.stringify({ts:Date.now(), data})); }catch(e){}
+}
+
 /* ============ 接口：JSONP 通用 ============ */
 function jsonpGet(url){
   return new Promise((resolve,reject)=>{
@@ -4098,7 +4114,7 @@ function jsonpGet(url){
     function cleanup(){ delete window[cb]; s.remove(); }
     s.onerror = ()=>{ cleanup(); reject(new Error("net")); };
     document.body.appendChild(s);
-    setTimeout(()=>{ if(window[cb]){ cleanup(); reject(new Error("timeout")); } }, 9000);
+    setTimeout(()=>{ if(window[cb]){ cleanup(); reject(new Error("timeout")); } }, 6000);
   });
 }
 
@@ -4176,7 +4192,7 @@ function _runTrendQueue(){
   s.onerror = ()=> done(null);
   s.onabort = ()=> done(null);
   document.body.appendChild(s);
-  setTimeout(()=> done(null), 10000); // 绝对超时兜底
+  setTimeout(()=> done(null), 6000); // 绝对超时兜底
 }
 function getFundTrend(code){
   return new Promise((resolve)=>{
@@ -4222,7 +4238,7 @@ function _runSinaQueue(){
   s.onerror = ()=> done(null);
   s.onabort = ()=> done(null);
   document.body.appendChild(s);
-  setTimeout(()=> done(null), 10000);
+  setTimeout(()=> done(null), 6000);
 }
 function getFundTrendSina(code){
   return new Promise((resolve)=>{
@@ -4688,6 +4704,12 @@ function sparkline(series, w=300, h=56){
    策略：历史净值/K线是最稳定的底牌；实时行情只是"锦上添花"。
    这样即使 push2 被网络拦截，也能显示走势图、近1年/3年、技术面研判。 */
 async function loadFund(f){
+  // 优先命中本地缓存，避免每次切换/刷新都重拉全部基金
+  const cached = getFundCache(f.code);
+  if(cached && cached.series && cached.series.length >= 30){
+    return Object.assign({}, f, cached);
+  }
+
   let quote = null, series = null;
   const secid = (f.market==="sh"?"1":"0") + "." + f.code;
 
@@ -4716,7 +4738,9 @@ async function loadFund(f){
 
   const m = calcMetrics(series);
   const tech = analyzeTech(series);
-  return Object.assign({}, f, { quote, series, m, tech });
+  const out = Object.assign({}, f, { quote, series, m, tech });
+  if(series && series.length >= 30) setFundCache(f.code, {quote, series, m, tech});
+  return out;
 }
 
 /* ============ v6：候选池实时重排，取当前最强 Top3 ============ */
@@ -4728,11 +4752,12 @@ function scoreOf(d){
   const riskPenalty = Math.max(0, -mdd - 0.3);
   return retScore*100 - riskPenalty*40;
 }
-// 拉取候选池全部基金净值，算指标，按综合分降序，返回前3
+// 拉取候选池前 N 只基金净值，算指标，按综合分降序，返回前3
+// 只取前 20 只即可覆盖 Top3 排序，避免全量 40 只串行加载导致首屏过慢
 async function rankPool(sec){
-  const pool = sec.pool || [];
+  const pool = (sec.pool || []).slice(0, 20);
   const loaded = [];
-  const BATCH = 4; // 限制并发，避免请求覆盖/卡死
+  const BATCH = 6; // 控制并发，避免浏览器同域名连接数受限
   for(let i=0;i<pool.length;i+=BATCH){
     const batch = pool.slice(i,i+BATCH);
     const ds = await Promise.all(batch.map(f=>loadFund(f).catch(()=>null)));
@@ -5274,13 +5299,15 @@ function renderCards(){
   const box = $("#cards");
   const title = $("#sectitle");
   title.innerHTML = current.name + ' <small>同板块实时最强 Top3 · 红涨绿跌</small>';
-  box.innerHTML = '<div class="loading">正在拉取候选池、计算排名…（约需十几秒，请稍候）</div>';
+  box.innerHTML = '<div class="loading">正在计算同板块最强 Top3…（首次加载约 5~10 秒）</div>';
   (async()=>{
     box.innerHTML = "";
     if(current.boss) box.appendChild(bossEl(current));
-    // 情绪面模块：板块资金 + 恐贪指数（先拉，但不立即渲染——等 top 算完一起渲染，因为诊断需要 top 的技术面）
-    const sent = await loadSentiment(current).catch(()=>null);
-    const top = await rankPool(current);
+    // 情绪面 + 候选池排名 并行拉取，减少等待
+    const [sent, top] = await Promise.all([
+      loadSentiment(current).catch(()=>null),
+      rankPool(current)
+    ]);
     if(!top.length){
       // top 为空时直接渲染情绪区 + 错误提示
       if(sent) box.appendChild(sentimentEl(current, sent));
