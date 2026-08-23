@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.4.6 · 热门板块 Top3</title>
+<title>选基助手 v6.5.0 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -4218,14 +4218,19 @@ function $(s){ return document.querySelector(s); }
 function pct(n){ return (n>=0?"+":"") + (n*100).toFixed(2) + "%"; }
 function cls(n){ return n>=0 ? "up" : "down"; }
 
-/* ============ 本地缓存（减少重复请求，TTL 5 分钟） ============ */
+/* ============ 本地缓存（减少重复请求，净值 TTL 30 分钟） ============
+   v6.5.0：TTL 由 5 分钟放宽到 30 分钟。
+   原因：历史净值序列（series）在收盘后不再变化，盘中虽会更新最新一日，
+   但本工具对"当日涨跌"始终用 series 尾两日实时重算（getFundQuoteFromTrend），
+   不依赖缓存里的 quote，因此拉长 TTL 不会让盘中涨跌失真，
+   却能显著减少切换板块/刷新时的重复请求（是卡片加载慢的主因之一）。 */
 function _cacheKey(code){ return "fs_cache_" + code; }
 function getFundCache(code){
   try{
     const raw = localStorage.getItem(_cacheKey(code));
     if(!raw) return null;
     const obj = JSON.parse(raw);
-    if(!obj || Date.now() - obj.ts > 5*60*1000) return null;
+    if(!obj || Date.now() - obj.ts > 30*60*1000) return null;
     return obj.data;
   }catch(e){ return null; }
 }
@@ -4958,33 +4963,35 @@ function scoreOf(d){
 }
 // 拉取候选池前 N 只基金净值，算指标，按综合分降序，返回前3
 // v6.4.4：池子扩到 50；去重后补拉持有人结构（规模+机构占比）再排序
+// v6.5.0：净值加载与持有人结构预取合并到同一批次并发，消除"净值全拉完再串行补拉一轮"的等待（加速主因之一）
 async function rankPool(sec){
   const pool = (sec.pool || []).slice(0, 50);
   const loaded = [];
   const BATCH = 6; // 控制并发，避免浏览器同域名连接数受限
   for(let i=0;i<pool.length;i+=BATCH){
     const batch = pool.slice(i,i+BATCH);
-    const ds = await Promise.all(batch.map(f=>loadFund(f).catch(()=>null)));
-    ds.forEach(d=>{ if(d && d.series && d.series.length>=30) loaded.push(d); });
-  }
-  // v6.3.2：同主体 A/C 份额去重（C 类优先），避免 Top3 里 A、C 同时上榜
-  const deduped = dedupeShares(loaded);
-  // v6.4.4：补拉持有人结构 → 算规模（总份额×最新净值）与机构占比
-  for(let i=0;i<deduped.length;i+=BATCH){
-    const batch = deduped.slice(i,i+BATCH);
-    const exs = await Promise.all(batch.map(d=>loadHolderStruct(d.code).catch(()=>null)));
-    batch.forEach((d,idx)=>{
+    // 同批内：净值（loadFund）与持有人结构（loadHolderStruct）并行预取
+    const [ds, exs] = await Promise.all([
+      Promise.all(batch.map(f=>loadFund(f).catch(()=>null))),
+      Promise.all(batch.map(f=>loadHolderStruct(f.code).catch(()=>null)))
+    ]);
+    batch.forEach((f,idx)=>{
+      const d = ds[idx];
+      if(!d || !d.series || d.series.length<30) return;
       const ex = exs[idx];
       if(ex){
-        const lastNav = (d.series && d.series.length) ? d.series[d.series.length-1].v : 0;
+        const lastNav = d.series[d.series.length-1].v || 0;
         d.extra = {
           inst: ex.inst, person: ex.person, internal: ex.internal,
           totalShareYi: ex.totalShareYi, date: ex.date,
           scaleYi: ex.totalShareYi * lastNav
         };
       }
+      loaded.push(d);
     });
   }
+  // v6.3.2：同主体 A/C 份额去重（C 类优先），避免 Top3 里 A、C 同时上榜
+  const deduped = dedupeShares(loaded);
   deduped.sort((a,b)=> scoreOf(b) - scoreOf(a));
   deduped.forEach((d,idx)=> d._rank = idx+1);
   return deduped.slice(0,3);
@@ -6286,7 +6293,7 @@ function renderCustom(){
   const box = $("#custom"); box.innerHTML = "";
   const bar = document.createElement("div");
   bar.className = "cbar";
-  bar.innerHTML = '<button class="favbtn" id="cusBack">← 返回板块</button><button class="favbtn" id="cusDemo" style="border-color:#16a34a;color:#16a34a">📋 一键填示例</button><span style="font-size:12px;color:var(--sub)">输入代码+成本+份额 → 自动算盈亏+止损/止盈线·<b>没填过点右侧按钮先看效果</b></span>';
+  bar.innerHTML = '<button class="favbtn" id="cusBack">← 返回板块</button><span style="font-size:12px;color:var(--sub)">输入代码+成本+份额 → 自动算盈亏+止损/止盈线</span>';
   box.appendChild(bar);
 
   const form = document.createElement("div");
@@ -6333,7 +6340,6 @@ function renderCustom(){
     box.classList.add("hidden"); box.innerHTML="";
     $("#tabs").classList.remove("hidden"); $("#sectitle").classList.remove("hidden"); $("#cards").classList.remove("hidden");
   };
-  $("#cusDemo").onclick = ()=> fillDemoPositions();
   $("#cusAdd").onclick = ()=>addCustom();
   $("#cusCode").addEventListener("keydown", (e)=>{ if(e.key==="Enter") addCustom(); });
 
@@ -6377,20 +6383,6 @@ function renderCustom(){
     }
   };
 
-  refreshCustomList();
-}
-
-/* 一键填示例持仓：演示用，覆盖当前持仓。
-   3 只覆盖电力/白酒/半导体三个板块，附带合理成本+份额+已实现盈亏，
-   让"持仓汇总卡 + 写损排序表"立刻可见（避免用户填表前看不到效果） */
-function fillDemoPositions(){
-  if(getCustoms().length && !confirm("已有持仓数据，将被示例覆盖。是否继续？")) return;
-  const demo = [
-    {code:"019593", kind:"fund", market:"", cost:1.100, shares:10000, realized:-100, note:"嘉实央企能源（电力）"},
-    {code:"161725", kind:"fund", market:"", cost:1.500, shares:5000,  realized:0,    note:"招商白酒（白酒）"},
-    {code:"007300", kind:"fund", market:"", cost:1.200, shares:8000,  realized:0,    note:"国联安半导体（半导体）"}
-  ];
-  saveCustoms(demo);
   refreshCustomList();
 }
 
@@ -6503,75 +6495,71 @@ async function refreshCustomList(){
     holder.appendChild(el);
   });
 
-  // 异步加载净值+恐贪，回来后逐只替换卡片（不阻塞列表骨架渲染）
-  Promise.all(list.map((item,i)=> loadCustomFund(item).then(d=>({i,d})).catch(()=>({i,d:null}))))
-    .then(results=>{
-      const ds = list.map(()=>null);
-      results.forEach(r=>{ ds[r.i] = r.d; });
-      Promise.all(ds.map((d,idx)=> d ? getSentimentForFund(d.code, d.name).catch(()=>null) : Promise.resolve(null)))
-        .then(sents=>{
-          ds.forEach((d,i)=>{
-            const item = list[i];
-            const fundSent = sents[i];
-            const el = holder.querySelector('[data-idx="'+i+'"]');
-            if(!el) return;
-            const newEl = cardEl(d || makePlaceholderFund(item));
-            newEl.dataset.idx = i;
-            const top = newEl.querySelector(".fc-top div:first-child");
-            top.innerHTML += '<span class="del-btn" data-code="'+item.code+'">删除</span>';
-            newEl.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
-            const secLabel = fundSent && fundSent.sector ? fundSent.sector : (fundSent && fundSent.fallback ? fundSent.fallback : '未归类');
-            const secTag = document.createElement("div");
-            secTag.className = "sec-tag";
-            secTag.innerHTML = '📌 归属板块：<b>'+secLabel+'</b>' + (fundSent && fundSent.score!=null ? '<span class="sec-score">恐贪 '+fundSent.score+'</span>' : '');
-            const todayEl = newEl.querySelector(".today");
-            if(todayEl && todayEl.parentNode === newEl){ newEl.insertBefore(secTag, todayEl); }
-            else { newEl.appendChild(secTag); }
-            const posHtml = posBoxHtml(item, d || makePlaceholderFund(item), fundSent);
-            if(posHtml){
-              const wrap = document.createElement("div");
-              wrap.innerHTML = posHtml;
-              newEl.appendChild(wrap.firstElementChild);
-              newEl.querySelectorAll(".pos-edit").forEach(btn=>{ btn.onclick = ()=> editPos(item); });
-              const ri = newEl.querySelector(".realized-input");
-              if(ri) ri.onchange = ()=> saveRealized(item, ri.value);
-            }
-            holder.replaceChild(newEl, el);
-          });
-        });
-    });
-
-  // 原始并行加载逻辑（已改为上面的异步逐个替换，保留 ds/sents 变量名以便下方汇总使用）
+  // 异步加载净值+恐贪：只加载一次（v6.5.0 修复——原逻辑会重复调用 loadCustomFund 两遍，
+  // 一次替换卡片、一次算汇总，导致持仓每只基金网络请求翻倍）。
+  // 现在合并为一次加载，ds/sents 同时供卡片替换与汇总卡复用。
   const ds = list.map(()=>null);
   const sents = list.map(()=>null);
-  // 触发一次异步加载以填充汇总卡（与上面解耦，避免阻塞骨架）
-  (async ()=>{
-    const loaded = await Promise.all(list.map(loadCustomFund).map(p=>p.catch(()=>null)));
-    const ss = await Promise.all(loaded.map(d=> d ? getSentimentForFund(d.code, d.name).catch(()=>null) : Promise.resolve(null)));
-    loaded.forEach((d,i)=>{ ds[i]=d; sents[i]=ss[i]; });
-    const sumResult = summaryBoxHtml(list, ds);
-    const box2 = $("#cusList");
-    if(sumResult.summary){
-      const oldSummary = box2.querySelector(".summary-box");
-      if(oldSummary) oldSummary.outerHTML = sumResult.summary;
-      if(sumResult.rank){
-        const newSummary = box2.querySelector(".summary-box");
-        if(newSummary) newSummary.insertAdjacentHTML("afterend", sumResult.rank);
+  Promise.all(list.map((item,i)=> loadCustomFund(item).then(d=>({i,d})).catch(()=>({i,d:null}))))
+    .then(results=>{
+      results.forEach(r=>{ ds[r.i] = r.d; });
+      return Promise.all(ds.map((d)=> d ? getSentimentForFund(d.code, d.name).catch(()=>null) : Promise.resolve(null)));
+    })
+    .then(sentArr=>{
+      sentArr.forEach((s,i)=>{ sents[i] = s; });
+      // 1) 逐只替换卡片（不阻塞骨架）
+      ds.forEach((d,i)=>{
+        const item = list[i];
+        const fundSent = sents[i];
+        const el = holder.querySelector('[data-idx="'+i+'"]');
+        if(!el) return;
+        const newEl = cardEl(d || makePlaceholderFund(item));
+        newEl.dataset.idx = i;
+        const top = newEl.querySelector(".fc-top div:first-child");
+        top.innerHTML += '<span class="del-btn" data-code="'+item.code+'">删除</span>';
+        newEl.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
+        const secLabel = fundSent && fundSent.sector ? fundSent.sector : (fundSent && fundSent.fallback ? fundSent.fallback : '未归类');
+        const secTag = document.createElement("div");
+        secTag.className = "sec-tag";
+        secTag.innerHTML = '📌 归属板块：<b>'+secLabel+'</b>' + (fundSent && fundSent.score!=null ? '<span class="sec-score">恐贪 '+fundSent.score+'</span>' : '');
+        const todayEl = newEl.querySelector(".today");
+        if(todayEl && todayEl.parentNode === newEl){ newEl.insertBefore(secTag, todayEl); }
+        else { newEl.appendChild(secTag); }
+        const posHtml = posBoxHtml(item, d || makePlaceholderFund(item), fundSent);
+        if(posHtml){
+          const wrap = document.createElement("div");
+          wrap.innerHTML = posHtml;
+          newEl.appendChild(wrap.firstElementChild);
+          newEl.querySelectorAll(".pos-edit").forEach(btn=>{ btn.onclick = ()=> editPos(item); });
+          const ri = newEl.querySelector(".realized-input");
+          if(ri) ri.onchange = ()=> saveRealized(item, ri.value);
+        }
+        holder.replaceChild(newEl, el);
+      });
+      // 2) 填充汇总卡 + 亏损排序表（复用同一批 ds/sents）
+      const sumResult = summaryBoxHtml(list, ds);
+      const box2 = $("#cusList");
+      if(sumResult.summary){
+        const oldSummary = box2.querySelector(".summary-box");
+        if(oldSummary) oldSummary.outerHTML = sumResult.summary;
+        if(sumResult.rank){
+          const newSummary = box2.querySelector(".summary-box");
+          if(newSummary) newSummary.insertAdjacentHTML("afterend", sumResult.rank);
+        }
+        const collapseBtn = box2.querySelector("#rankCollapse");
+        const rankBoxEl = box2.querySelector("#rankBox");
+        if(collapseBtn && rankBoxEl){
+          collapseBtn.onclick = function(){
+            if(rankBoxEl.style.display === "none"){ rankBoxEl.style.display = ""; collapseBtn.textContent = "收起 ▾"; }
+            else { rankBoxEl.style.display = "none"; collapseBtn.textContent = "展开 ▸"; }
+          };
+        }
+      } else {
+        const oldSummary = box2.querySelector(".summary-box");
+        if(oldSummary) oldSummary.remove();
       }
-      const collapseBtn = box2.querySelector("#rankCollapse");
-      const rankBoxEl = box2.querySelector("#rankBox");
-      if(collapseBtn && rankBoxEl){
-        collapseBtn.onclick = function(){
-          if(rankBoxEl.style.display === "none"){ rankBoxEl.style.display = ""; collapseBtn.textContent = "收起 ▾"; }
-          else { rankBoxEl.style.display = "none"; collapseBtn.textContent = "展开 ▸"; }
-        };
-      }
-    } else {
-      const oldSummary = box2.querySelector(".summary-box");
-      if(oldSummary) oldSummary.remove();
-    }
-  })();
-  return; // 提前返回，汇总/卡片数据由上面的异步填充
+    });
+  return; // 提前返回，卡片与汇总数据由上面的异步填充
 
   // ===== 以下为旧的全量 await 逻辑（已弃用，保留以免误删依赖） =====
   holder.innerHTML = "";
