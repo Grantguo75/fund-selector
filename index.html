@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.4.5 · 热门板块 Top3</title>
+<title>选基助手 v6.4.6 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -5016,6 +5016,17 @@ function dedupeShares(list){
 }
 
 /* ============ 渲染卡片 ============ */
+// 占位基金对象：用本地持仓数据先画出卡片骨架，净值/恐贪/走势图等网络数据回来后再替换
+function makePlaceholderFund(item){
+  return {
+    code: item.code,
+    name: item.name || item.code,
+    kind: item.kind || "fund",
+    market: item.market || "",
+    mgr: "",
+    series: null, quote: null, m: null, extra: null, tech: null
+  };
+}
 function cardEl(d){
   const wrap = document.createElement("div");
   wrap.className = "fcard";
@@ -6447,8 +6458,9 @@ function removeCustom(code){
 }
 async function refreshCustomList(){
   const box = $("#cusList"); box.innerHTML = "";
-  // 先拉一次当前板块恐贪，填充 window.__marketSentiment 供止损止盈引用（切到对应板块再开持仓更准）
-  await loadSentiment(current).catch(()=>{});
+  // 注：不再 await loadSentiment(current) —— 持仓卡各自走 getSentimentForFund（独立板块恐贪），
+  //     开头这步 await 只是为 window.__marketSentiment 兜底（renderOverview 用），与持仓渲染无关；
+  //     删掉它可让列表骨架立即渲染，避免"点添加持仓后空等数秒"的假死体感。
   const list = getCustoms();
   if(!list.length){
     box.innerHTML = '<div class="ctitle">我的持仓<small>暂无，请在上方添加</small></div>';
@@ -6468,10 +6480,100 @@ async function refreshCustomList(){
   // 排序表占位
   const rankHolder = document.createElement("div");
 
-  // 并行加载持仓基金
-  const ds = await Promise.all(list.map(loadCustomFund));
-  // 并行拉每只持仓基金对应板块的恐贪分（v6.3.3：每只用自己板块的，不再共用当前 tab）
-  const sents = await Promise.all(ds.map(d=> getSentimentForFund(d.code, d.name).catch(()=>null) ));
+  // 先立即渲染占位卡片（仅本地数据：代码/名称/删除/盈亏框），保证点击添加后瞬间有反馈；
+  // 净值、恐贪分、走势图等网络数据回来后逐个替换卡片内容。
+  list.forEach((item,i)=>{
+    const placeholder = makePlaceholderFund(item);
+    const el = cardEl(placeholder);
+    el.dataset.idx = i;
+    // 删除按钮
+    const top = el.querySelector(".fc-top div:first-child");
+    top.innerHTML += '<span class="del-btn" data-code="'+item.code+'">删除</span>';
+    el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
+    // 持仓盈亏框（成本/份额已知即可算，不依赖净值）
+    const posHtml = posBoxHtml(item, placeholder, null);
+    if(posHtml){
+      const wrap = document.createElement("div");
+      wrap.innerHTML = posHtml;
+      el.appendChild(wrap.firstElementChild);
+      el.querySelectorAll(".pos-edit").forEach(btn=>{ btn.onclick = ()=> editPos(item); });
+      const ri = el.querySelector(".realized-input");
+      if(ri) ri.onchange = ()=> saveRealized(item, ri.value);
+    }
+    holder.appendChild(el);
+  });
+
+  // 异步加载净值+恐贪，回来后逐只替换卡片（不阻塞列表骨架渲染）
+  Promise.all(list.map((item,i)=> loadCustomFund(item).then(d=>({i,d})).catch(()=>({i,d:null}))))
+    .then(results=>{
+      const ds = list.map(()=>null);
+      results.forEach(r=>{ ds[r.i] = r.d; });
+      Promise.all(ds.map((d,idx)=> d ? getSentimentForFund(d.code, d.name).catch(()=>null) : Promise.resolve(null)))
+        .then(sents=>{
+          ds.forEach((d,i)=>{
+            const item = list[i];
+            const fundSent = sents[i];
+            const el = holder.querySelector('[data-idx="'+i+'"]');
+            if(!el) return;
+            const newEl = cardEl(d || makePlaceholderFund(item));
+            newEl.dataset.idx = i;
+            const top = newEl.querySelector(".fc-top div:first-child");
+            top.innerHTML += '<span class="del-btn" data-code="'+item.code+'">删除</span>';
+            newEl.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
+            const secLabel = fundSent && fundSent.sector ? fundSent.sector : (fundSent && fundSent.fallback ? fundSent.fallback : '未归类');
+            const secTag = document.createElement("div");
+            secTag.className = "sec-tag";
+            secTag.innerHTML = '📌 归属板块：<b>'+secLabel+'</b>' + (fundSent && fundSent.score!=null ? '<span class="sec-score">恐贪 '+fundSent.score+'</span>' : '');
+            const todayEl = newEl.querySelector(".today");
+            if(todayEl && todayEl.parentNode === newEl){ newEl.insertBefore(secTag, todayEl); }
+            else { newEl.appendChild(secTag); }
+            const posHtml = posBoxHtml(item, d || makePlaceholderFund(item), fundSent);
+            if(posHtml){
+              const wrap = document.createElement("div");
+              wrap.innerHTML = posHtml;
+              newEl.appendChild(wrap.firstElementChild);
+              newEl.querySelectorAll(".pos-edit").forEach(btn=>{ btn.onclick = ()=> editPos(item); });
+              const ri = newEl.querySelector(".realized-input");
+              if(ri) ri.onchange = ()=> saveRealized(item, ri.value);
+            }
+            holder.replaceChild(newEl, el);
+          });
+        });
+    });
+
+  // 原始并行加载逻辑（已改为上面的异步逐个替换，保留 ds/sents 变量名以便下方汇总使用）
+  const ds = list.map(()=>null);
+  const sents = list.map(()=>null);
+  // 触发一次异步加载以填充汇总卡（与上面解耦，避免阻塞骨架）
+  (async ()=>{
+    const loaded = await Promise.all(list.map(loadCustomFund).map(p=>p.catch(()=>null)));
+    const ss = await Promise.all(loaded.map(d=> d ? getSentimentForFund(d.code, d.name).catch(()=>null) : Promise.resolve(null)));
+    loaded.forEach((d,i)=>{ ds[i]=d; sents[i]=ss[i]; });
+    const sumResult = summaryBoxHtml(list, ds);
+    const box2 = $("#cusList");
+    if(sumResult.summary){
+      const oldSummary = box2.querySelector(".summary-box");
+      if(oldSummary) oldSummary.outerHTML = sumResult.summary;
+      if(sumResult.rank){
+        const newSummary = box2.querySelector(".summary-box");
+        if(newSummary) newSummary.insertAdjacentHTML("afterend", sumResult.rank);
+      }
+      const collapseBtn = box2.querySelector("#rankCollapse");
+      const rankBoxEl = box2.querySelector("#rankBox");
+      if(collapseBtn && rankBoxEl){
+        collapseBtn.onclick = function(){
+          if(rankBoxEl.style.display === "none"){ rankBoxEl.style.display = ""; collapseBtn.textContent = "收起 ▾"; }
+          else { rankBoxEl.style.display = "none"; collapseBtn.textContent = "展开 ▸"; }
+        };
+      }
+    } else {
+      const oldSummary = box2.querySelector(".summary-box");
+      if(oldSummary) oldSummary.remove();
+    }
+  })();
+  return; // 提前返回，汇总/卡片数据由上面的异步填充
+
+  // ===== 以下为旧的全量 await 逻辑（已弃用，保留以免误删依赖） =====
   holder.innerHTML = "";
   ds.forEach((d,i)=>{
     const el = cardEl(d);
