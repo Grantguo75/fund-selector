@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>选基助手 v6.5.5 · 热门板块 Top3</title>
+<title>选基助手 v6.5.6 · 热门板块 Top3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -4230,19 +4230,25 @@ function $(s){ return document.querySelector(s); }
 function pct(n){ return (n>=0?"+":"") + (n*100).toFixed(2) + "%"; }
 function cls(n){ return n>=0 ? "up" : "down"; }
 
-/* ============ 本地缓存（减少重复请求，净值 TTL 30 分钟） ============
+/* ============ 本地缓存（v6.5.6：净值 TTL 按净值日界智能判断） ============
    v6.5.0：TTL 由 5 分钟放宽到 30 分钟。
-   原因：历史净值序列（series）在收盘后不再变化，盘中虽会更新最新一日，
-   但本工具对"当日涨跌"始终用 series 尾两日实时重算（getFundQuoteFromTrend），
-   不依赖缓存里的 quote，因此拉长 TTL 不会让盘中涨跌失真，
-   却能显著减少切换板块/刷新时的重复请求（是卡片加载慢的主因之一）。 */
+   v6.5.6：场外基金净值一天只公布一次（交易日 20:00~23:00 陆续更新），
+   白天重复打开没有必要重拉。规则：
+   - 20:00 前（白天）：昨天 20:00 之后写入的缓存都算新鲜（必然包含最新已公布净值）
+   - 20:00 后（净值陆续公布窗口）：退回 30 分钟 TTL，保证晚上能看到当天新净值 */
 function _cacheKey(code){ return "fs_cache_" + code; }
+function _fundCacheFresh(ts){
+  const now = new Date();
+  if(now.getHours() >= 20) return Date.now() - ts < 30*60*1000;
+  const boundary = new Date(); boundary.setHours(20,0,0,0);
+  return ts >= boundary.getTime() - 864e5; // 今天20:00 往前推一天 = 昨天20:00
+}
 function getFundCache(code){
   try{
     const raw = localStorage.getItem(_cacheKey(code));
     if(!raw) return null;
     const obj = JSON.parse(raw);
-    if(!obj || Date.now() - obj.ts > 30*60*1000) return null;
+    if(!obj || !_fundCacheFresh(obj.ts)) return null;
     return obj.data;
   }catch(e){ return null; }
 }
@@ -4290,10 +4296,108 @@ function getFundQuotePush2(code){
     .catch(()=>null);
 }
 
-/* 天天基金 历史净值（script 注入全局 Data_netWorthTrend，必须串行避免并发覆盖） */
+/* ============ 天天基金 历史净值 · iframe 并行通道（v6.5.6 加速主通道） ============
+   背景：pingzhongdata 脚本把数据写到全局变量 Data_netWorthTrend，多只基金并发注入
+   会互相覆盖，因此旧实现（下方的 _trendQueue）只能串行——50 只基金排队下载是
+   首屏 5~10 秒的主因。
+   解法：每只基金在独立的隐藏 iframe 里注入脚本（about:blank 继承父页面源，
+   iframe 的 window 是隔离的，全局变量互不干扰），轮询读取 iframe 内的全局变量。
+   并发上限 4（浏览器对同一域名连接数约 6，留余量给持有人结构等请求）。
+   失败自动走 raceFallback 里的新浪/东财备用通道，不影响可用性。 */
+let _fastTrendActive = 0;
+const _fastTrendWaiters = [];
+function _fastTrendSlot(){
+  return new Promise(res=>{
+    if(_fastTrendActive < 4){ _fastTrendActive++; res(); }
+    else _fastTrendWaiters.push(res);
+  });
+}
+function _fastTrendRelease(){
+  _fastTrendActive--;
+  if(_fastTrendWaiters.length && _fastTrendActive < 4){ _fastTrendActive++; _fastTrendWaiters.shift()(); }
+}
+function _mapNavSeries(t){
+  return t.map(p=>{
+    let tv, vv;
+    if(p && typeof p === 'object'){
+      tv = (p.x!=null) ? Number(p.x) : NaN;
+      vv = (p.y!=null) ? Number(p.y) : NaN;
+    } else {
+      tv = Date.parse(String(p[0]).replace(/-/g,'/'));
+      vv = Number(p[1]);
+    }
+    return {t:tv, v:vv};
+  }).filter(x=>!isNaN(x.t)&&!isNaN(x.v));
+}
+function getFundTrendFast(code){
+  return _fastTrendSlot().then(()=> new Promise(resolve=>{
+    let settled = false, pollTimer = null, timeoutTimer = null;
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.setAttribute("aria-hidden","true");
+    const finish = (out)=>{
+      if(settled) return; settled = true;
+      clearInterval(pollTimer); clearTimeout(timeoutTimer);
+      try{ iframe.remove(); }catch(e){}
+      _fastTrendRelease();
+      resolve(out);
+    };
+    const start = ()=>{
+      if(settled || pollTimer) return; // 防止 onload 与 300ms 兜底重复触发
+      try{
+        const idoc = iframe.contentDocument;
+        if(!idoc || !idoc.body){ finish(null); return; }
+        const s = idoc.createElement("script");
+        s.src = "https://fund.eastmoney.com/pingzhongdata/" + code + ".js?rt=" + Date.now();
+        s.onerror = ()=> finish(null);
+        idoc.body.appendChild(s);
+        pollTimer = setInterval(()=>{
+          try{
+            const w = iframe.contentWindow;
+            if(w && w.Data_netWorthTrend && w.Data_netWorthTrend.length){
+              if(w.fS_name){ // 顺手缓存基金名称，供自选列表用
+                if(!window.__fundNames) window.__fundNames = {};
+                window.__fundNames[code] = w.fS_name;
+              }
+              const out = _mapNavSeries(w.Data_netWorthTrend);
+              finish(out && out.length>=30 ? out : null);
+            }
+          }catch(e){ /* iframe 被移除等异常，交给超时兜底 */ }
+        }, 60);
+        timeoutTimer = setTimeout(()=> finish(null), 6000);
+      }catch(e){ finish(null); }
+    };
+    iframe.onload = start;
+    iframe.src = "about:blank";
+    document.body.appendChild(iframe);
+    // 极少数浏览器 about:blank 不触发 onload，300ms 后兜底检查
+    setTimeout(()=>{ if(!settled && iframe.contentDocument && iframe.contentDocument.readyState==="complete" && !pollTimer) start(); }, 300);
+  }));
+}
+
+/* 主通道 + 延迟备用通道竞速（v6.5.6）：
+   主通道正常时不再同时发 3 个请求（原来每只基金天天+新浪+K线全发，50 只=150 个请求），
+   主通道 1.5 秒无结果或直接失败时才点燃备用通道。 */
+function raceFallback(primaryFn, delayMs, fallbackFns){
+  return new Promise(resolve=>{
+    let settled = false, fbTimer = null;
+    const finish = (v)=>{ if(settled) return; settled = true; if(fbTimer) clearTimeout(fbTimer); resolve(v); };
+    const fireFallbacks = ()=>{
+      if(settled) return;
+      firstNonNull(fallbackFns.map(f=>f().catch(()=>null))).then(finish);
+    };
+    primaryFn()
+      .then(v=>{ if(v && v.length>=30) finish(v); else fireFallbacks(); })
+      .catch(fireFallbacks);
+    fbTimer = setTimeout(fireFallbacks, delayMs);
+  });
+}
+
+/* 天天基金 历史净值（script 注入全局 Data_netWorthTrend，必须串行避免并发覆盖）
+   v6.5.6：主通道改用上方 iframe 并行版 getFundTrendFast；本串行版保留，
+   作为 iframe 被浏览器插件拦截等场景的手动兜底（raceFallback 的备用通道之一） */
 const _trendQueue = [];
-let _trendRunning = false;
-function _runTrendQueue(){
+let _trendRunning = false;function _runTrendQueue(){
   if(_trendRunning || !_trendQueue.length) return;
   _trendRunning = true;
   const {code, resolve} = _trendQueue.shift();
@@ -4435,6 +4539,59 @@ function getEtfQuote(secid){
       return { pct: p, time: "盘中行情" };
     })
     .catch(()=>null);
+}
+
+/* ============ 盘中参考涨跌（v6.5.5 新增）============
+   背景：场外基金净值每日只公布一次（收盘后晚8~11点），盘中没有实时数据；
+   天天基金公开估值接口 fundgz 已下线（v5.7 移除），纯前端拿不到盘中估值。
+   替代方案：每个板块配一只跟踪同指数的场内 ETF，用 push2 实时行情作为
+   "盘中参考涨跌"展示在场外基金卡片上（ETF 与联接基金当日涨跌基本一致，误差通常 <0.5%）。
+   注意：push2 有每分钟限流，每次板块渲染只发 1 个请求（3 张卡片共用同一数据）。
+   海外基金板块因池内 QDII 标的分散（纳指/标普/全球制造），无单一代表 ETF，不提供参考。 */
+const _SECTOR_REF_ETF = {
+  "半导体/芯片":{secid:"1.512480",name:"半导体ETF"},
+  "半导体设备":{secid:"1.561980",name:"半导体设备ETF"},
+  "PCB":{secid:"1.515260",name:"电子ETF"},
+  "CPO":{secid:"1.515880",name:"通信ETF"},
+  "MLCC":{secid:"1.515260",name:"电子ETF"},
+  "人工智能/云计算":{secid:"1.515980",name:"人工智能ETF"},
+  "有色金属(贵金属)":{secid:"0.159690",name:"有色矿业ETF"},
+  "电网设备":{secid:"1.560390",name:"电网设备ETF"},
+  "电力":{secid:"0.159611",name:"电力ETF"},
+  "红利":{secid:"1.510880",name:"红利ETF"},
+  "军工/航天":{secid:"1.512660",name:"军工ETF"},
+  "医药":{secid:"1.512010",name:"医药ETF"},
+  "新能源":{secid:"1.516090",name:"新能源ETF"},
+  "锂矿":{secid:"0.159840",name:"锂电池ETF"},
+  "恒生科技":{secid:"1.513180",name:"恒生科技ETF"},
+  "光伏":{secid:"1.515790",name:"光伏ETF"},
+  "白酒消费":{secid:"1.512690",name:"酒ETF"},
+  "粮食":{secid:"0.159698",name:"粮食ETF"},
+  "沪深300":{secid:"1.510300",name:"沪深300ETF"},
+  "煤炭":{secid:"1.515220",name:"煤炭ETF"}
+};
+/* 是否 A 股交易时段（9:30-11:30 / 13:00-15:00）。
+   非交易时段接口返回上一交易日的涨跌，照样有参考意义（与最近公布的净值方向一致）。 */
+function isTradingTime(){
+  const d = new Date();
+  const day = d.getDay(); if(day===0||day===6) return false;
+  const m = d.getHours()*60 + d.getMinutes();
+  return (m>=570 && m<=690) || (m>=780 && m<=900);
+}
+/* 板块 Top3 卡片渲染完后调用：拉一次参考 ETF 实时行情，填充所有场外基金卡片的"盘中参考"行 */
+function attachIntradayRef(sec){
+  const ref = _SECTOR_REF_ETF[sec.name];
+  if(!ref) return;
+  const rows = document.querySelectorAll("#cards .fcard .iref");
+  if(!rows.length) return;
+  getEtfQuote(ref.secid).then(q=>{
+    if(!q){ rows.forEach(r=>r.remove()); return; }
+    const trading = isTradingTime();
+    const txt = (trading?"⚡ 盘中参考":"🕘 最近参考") + "：" + ref.name + " " +
+      '<span class="'+cls(q.pct)+'" style="font-weight:700">'+pct(q.pct)+'</span>' +
+      '<span style="color:#9aa0aa;font-weight:400"> · 同指数ETF' + (trading?"实时":"收盘") + '涨跌 ≈ 当日净值方向（收盘后晚8点更新真净值）</span>';
+    rows.forEach(r=>{ r.innerHTML = txt; r.style.display = "block"; });
+  }).catch(()=>{ rows.forEach(r=>r.remove()); });
 }
 
 /* 多通道解析基金真实名称：pingzhongdata 的 fS_name 只在主通道成功时才有。
@@ -4881,12 +5038,13 @@ async function loadFund(f){
   const secid = (f.market==="sh"?"1":"0") + "." + f.code;
 
   if(f.kind === "fund"){
-    // 场外基金：pingzhongdata + 新浪净值 + push2his K线，三通道竞速取第一个可用
-    series = await firstNonNull([
-      getFundTrend(f.code).catch(()=>null),
-      getFundTrendSina(f.code).catch(()=>null),
-      getKline("0." + f.code).catch(()=>null)
-    ]);
+    // v6.5.6：场外基金改为"iframe并行天天 → 1.5s无果再点 新浪/串行天天/K线"的延迟竞速，
+    // 主通道正常时每只基金只发 1 个请求（原来是 3 个全发），首屏请求量降 2/3
+    series = await raceFallback(
+      ()=>getFundTrendFast(f.code),
+      1500,
+      [ ()=>getFundTrendSina(f.code), ()=>getFundTrend(f.code), ()=>getKline("0." + f.code) ]
+    );
     quote = getFundQuoteFromTrend(series); // 用最后两日净值算涨跌
   } else {
     // 场内 ETF：push2his K线 + 新浪净值 竞速，同时拉 push2 实时行情
@@ -4976,37 +5134,41 @@ function scoreOf(d){
 // 拉取候选池前 N 只基金净值，算指标，按综合分降序，返回前3
 // v6.4.4：池子扩到 50；去重后补拉持有人结构（规模+机构占比）再排序
 // v6.5.0：净值加载与持有人结构预取合并到同一批次并发，消除"净值全拉完再串行补拉一轮"的等待（加速主因之一）
+// v6.5.6：持有人结构改为"懒加载"——先按收益/回撤排序取前 10，只给这 10 只拉持有人结构
+//   再叠加质量分做最终排序。原来 50 只全拉是 50 个额外请求，实际只有 Top3 用得上；
+//   质量分满分差 ±30 分（≈近1年收益 0.3%），前 10 的余量足够覆盖名次变化，结果几乎不变。
 async function rankPool(sec){
   const pool = (sec.pool || []).slice(0, 50);
   const loaded = [];
   const BATCH = 6; // 控制并发，避免浏览器同域名连接数受限
   for(let i=0;i<pool.length;i+=BATCH){
     const batch = pool.slice(i,i+BATCH);
-    // 同批内：净值（loadFund）与持有人结构（loadHolderStruct）并行预取
-    const [ds, exs] = await Promise.all([
-      Promise.all(batch.map(f=>loadFund(f).catch(()=>null))),
-      Promise.all(batch.map(f=>loadHolderStruct(f.code).catch(()=>null)))
-    ]);
-    batch.forEach((f,idx)=>{
-      const d = ds[idx];
-      if(!d || !d.series || d.series.length<30) return;
-      const ex = exs[idx];
-      if(ex){
-        const lastNav = d.series[d.series.length-1].v || 0;
-        d.extra = {
-          inst: ex.inst, person: ex.person, internal: ex.internal,
-          totalShareYi: ex.totalShareYi, date: ex.date,
-          scaleYi: ex.totalShareYi * lastNav
-        };
-      }
-      loaded.push(d);
+    const ds = await Promise.all(batch.map(f=>loadFund(f).catch(()=>null)));
+    ds.forEach(d=>{
+      if(d && d.series && d.series.length>=30) loaded.push(d);
     });
   }
   // v6.3.2：同主体 A/C 份额去重（C 类优先），避免 Top3 里 A、C 同时上榜
   const deduped = dedupeShares(loaded);
+  // 第一步：不带质量分预排序，取前 10 候选（qualityScore 对无 extra 数据返回 0，天然兼容）
   deduped.sort((a,b)=> scoreOf(b) - scoreOf(a));
-  deduped.forEach((d,idx)=> d._rank = idx+1);
-  return deduped.slice(0,3);
+  const cands = deduped.slice(0, 10);
+  // 第二步：只给前 10 拉持有人结构（并行），叠加质量分后最终排序
+  const exs = await Promise.all(cands.map(d=>loadHolderStruct(d.code).catch(()=>null)));
+  cands.forEach((d,idx)=>{
+    const ex = exs[idx];
+    if(ex){
+      const lastNav = d.series[d.series.length-1].v || 0;
+      d.extra = {
+        inst: ex.inst, person: ex.person, internal: ex.internal,
+        totalShareYi: ex.totalShareYi, date: ex.date,
+        scaleYi: ex.totalShareYi * lastNav
+      };
+    }
+  });
+  cands.sort((a,b)=> scoreOf(b) - scoreOf(a));
+  cands.forEach((d,idx)=> d._rank = idx+1);
+  return cands.slice(0,3);
 }
 
 /* 基金份额去重：同一只基金常有 A/C/E 等多个份额（净值走势几乎一致），
@@ -5059,6 +5221,8 @@ function cardEl(d){
   const y3 = hasData && d.m && d.m.y3!=null ? pct(d.m.y3) : "—";
   const mdd = hasData && d.m && d.m.mdd!=null && d.m.mdd!==0 ? pct(d.m.mdd) : "—";
   const badge = d.kind==="fund" ? '<span class="badge b-fund">场外</span>' : '<span class="badge b-etf">场内ETF</span>';
+  // v6.5.5：场外基金卡片加"盘中参考"占位行（默认隐藏，attachIntradayRef 拉到数据后填充显示）
+  const irefHtml = d.kind==="fund" ? '<div class="iref" style="display:none;font-size:11px;margin:6px 0 0;padding:6px 8px;background:#f8fafc;border-radius:6px;color:#6b7280"></div>' : '';
   const dataNote = hasData ? "" : '<div style="font-size:11px;color:#9aa0aa;background:#f8fafc;border-radius:6px;padding:6px 8px;margin:8px 0">⚠ 历史净值/走势图数据暂缺，可能接口限流或该基金无公开数据</div>';
   wrap.innerHTML =
     '<div class="fc-top"><div>' +
@@ -5068,6 +5232,7 @@ function cardEl(d){
     '<div class="star '+(on?"on":"")+'" data-code="'+d.code+'">★</div></div>' +
     '<div class="today"><span class="pct '+pctCls+'">'+pctTxt+'</span>' +
       '<span class="lbl">'+(d.kind==="fund"?"最新净值日涨跌":"今日涨跌")+' · '+timeTxt+'</span></div>' +
+    irefHtml +
     dataNote +
     '<div class="row3">' +
       '<div class="mini"><div class="k">近1年</div><div class="v">'+y1+'</div></div>' +
@@ -5673,7 +5838,7 @@ function renderCards(){
   const box = $("#cards");
   const title = $("#sectitle");
   title.innerHTML = current.name + ' <small>同板块实时最强 Top3 · 红涨绿跌 · 按收益+回撤+规模/机构综合排序</small>';
-  box.innerHTML = '<div class="loading">正在计算同板块最强 Top3…（首次加载约 5~10 秒）</div>';
+  box.innerHTML = '<div class="loading">正在计算同板块最强 Top3…（首次加载约 2~5 秒，之后当天秒开）</div>';
   (async()=>{
     try{
     box.innerHTML = "";
@@ -5737,6 +5902,8 @@ function renderCards(){
       try{ box.appendChild(cardEl(d)); }
       catch(e){ /* 单卡异常不影响其余 */ }
     }
+    // v6.5.5：填充场外基金卡片的"盘中参考"涨跌（同板块 3 张卡共用 1 次请求）
+    try{ attachIntradayRef(current); }catch(e){ /* 参考涨跌失败不影响主功能 */ }
     }catch(e){
       console.error("renderCards err", e);
       box.innerHTML = '<div class="disc" style="border-left:3px solid #d92b2b"><b>渲染异常</b>：'+(e&&e.message||e)+'<br><span style="font-size:11px;opacity:.7">控制台 F12 查看详情；点"↻ 刷新"重试</span></div>';
@@ -6029,9 +6196,9 @@ function summaryBoxHtml(list, ds){
   const items = []; // {name,code,amt,pct,realized,todayPnl}
   list.forEach((item, i)=>{
     const d = ds[i];
-    // v6.5.5：实时数据缺失时，回退到本地缓存净值，保证盈亏框/汇总仍能计算
-    const nav = (d && latestNav(d)!=null) ? latestNav(d) : getNavCache(item.code);
-    const todayPct = (d && d.quote && d.quote.pct!=null) ? d.quote.pct : 0;
+    if(!d) return;
+    const nav = latestNav(d);
+    const todayPct = (d.quote && d.quote.pct!=null) ? d.quote.pct : 0;
     if(item.cost!=null && item.shares!=null && nav!=null){
       const costVal = item.cost * item.shares;
       const nowVal = nav * item.shares;
@@ -6047,7 +6214,7 @@ function summaryBoxHtml(list, ds){
       totalRealized += realized;
       todayPnl += dayPnl;
       items.push({
-        name: (d && d.name) || item.name || item.code, code: item.code,
+        name: d.name || item.code, code: item.code,
         costVal, nowVal, pnl, realized, totalPnl, totalPnlRate,
         todayPct, dayPnl
       });
@@ -6290,26 +6457,13 @@ function getCustoms(){
 // 清理可再生的缓存，为持仓数据腾出空间（持仓是用户资产，不能丢）
 function clearDisposableCache(){
   try{
-    const prefixes = ["fs_cache_","fund-holder-","fund-ai-cache-","fs_bk_snap_","_fundSentCache","fund_nav_"];
+    const prefixes = ["fs_cache_","fund-holder-","fund-ai-cache-","fs_bk_snap_","_fundSentCache"];
     for(let i=localStorage.length-1;i>=0;i--){
       const k = localStorage.key(i);
       if(!k) continue;
       if(prefixes.some(p=>k.startsWith(p))) localStorage.removeItem(k);
     }
   }catch(e){}
-}
-// 最近一次成功的净值缓存：即使实时接口拉取失败，盈亏框也能用本地净值即时计算，
-// 避免"改了成本/份额但盈亏框不刷新/不出现"的问题（v6.5.5）
-function setNavCache(code, nav){
-  try{ if(typeof nav === "number" && !isNaN(nav)) localStorage.setItem("fund_nav_"+code, JSON.stringify({v:nav, ts:Date.now()})); }catch(e){}
-}
-function getNavCache(code){
-  try{
-    const raw = localStorage.getItem("fund_nav_"+code);
-    if(!raw) return null;
-    const o = JSON.parse(raw);
-    return (o && typeof o.v === "number") ? o.v : null;
-  }catch(e){ return null; }
 }
 function saveCustoms(list){
   let saved = false;
@@ -6362,9 +6516,6 @@ async function loadCustomFund(item){
   const f = {code:item.code, name:resolved||item.name||item.code, kind, market, mgr:"自选"};
   const d = await loadFund(f);
   d.name = resolved || d.name || item.name || item.code;
-  // v6.5.5：记录最近一次成功净值，供盈亏框在实时数据缺失时即时计算
-  const _nav = (d && d.series && d.series.length) ? d.series[d.series.length-1].v : null;
-  if(_nav!=null) setNavCache(item.code, _nav);
 
   // 把纠正后的名称/类型写回 localStorage
   if(resolved){
@@ -6584,11 +6735,7 @@ async function refreshCustomList(){
     top.innerHTML += '<span class="del-btn" data-code="'+item.code+'">删除</span>';
     el.querySelector(".del-btn").onclick = (e)=>{ removeCustom(e.target.dataset.code); };
     // 持仓盈亏框（成本/份额已知即可算，不依赖净值）
-    // v6.5.5：若本地有缓存净值，占位卡片也立即渲染盈亏框（用缓存净值 + 本地成本/份额），
-    // 不再等实时接口；实时数据回来后会被下面的异步替换覆盖为更准的值。
-    const cn = getNavCache(item.code);
-    const boxD = (cn!=null) ? Object.assign({}, placeholder, {series:[{v:cn, t:Date.now()}]}) : placeholder;
-    const posHtml = posBoxHtml(item, boxD, null);
+    const posHtml = posBoxHtml(item, placeholder, null);
     if(posHtml){
       const wrap = document.createElement("div");
       wrap.innerHTML = posHtml;
@@ -6774,15 +6921,7 @@ function editPos(item){
     if(isNaN(c)||c<=0||isNaN(s)||s<=0){ alert("请填正数"); return; }
     list[idx].cost = c; list[idx].shares = s;
   }
-  const ok = saveCustoms(list);
-  if(!ok){
-    // 存储空间不足时，saveCustoms 内部已清理过一次缓存，这里再兜底清一次并重试
-    clearDisposableCache();
-    if(!saveCustoms(list)){
-      alert("保存失败：浏览器 localStorage 可能已满。已尝试清理基金缓存，请重试一次。");
-      return;
-    }
-  }
+  saveCustoms(list);
   refreshCustomList();
 }
 
